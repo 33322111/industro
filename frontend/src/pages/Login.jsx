@@ -27,37 +27,43 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <div style={styles.container}>
-      <h1>Вход</h1>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <label style={styles.label}>
-          Имя пользователя:
-          <input
-            type="text"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-            style={styles.input}
-          />
-        </label>
-        <label style={styles.label}>
-          Пароль:
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            style={styles.input}
-          />
-        </label>
-        <button type="submit" style={styles.button}>
-          Войти
+      <div style={styles.container}>
+        <h1>Вход</h1>
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <label style={styles.label}>
+            Имя пользователя:
+            <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+                style={styles.input}
+            />
+          </label>
+          <label style={styles.label}>
+            Пароль:
+            <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                style={styles.input}
+            />
+          </label>
+          <button type="submit" style={styles.button}>
+            Войти
+          </button>
+        </form>
+        {error && <p style={styles.error}>{error}</p>}
+        <button
+            onClick={() => navigate("/password-reset")}
+            style={styles.linkButton}
+        >
+          Восстановить пароль
         </button>
-      </form>
-      {error && <p style={styles.error}>{error}</p>}
-    </div>
+      </div>
   );
 };
 

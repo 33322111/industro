@@ -19,24 +19,72 @@ const PasswordReset = () => {
   };
 
   return (
-    <div>
+    <div style={styles.container}>
       <h1>Сброс пароля</h1>
-      <form onSubmit={handleSubmit}>
-        <label>
+      <form onSubmit={handleSubmit} style={styles.form}>
+        <label style={styles.label}>
           Email:
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            style={styles.input}
           />
         </label>
-        <button type="submit">Сбросить пароль</button>
+        <button type="submit" style={styles.button}>
+          Сбросить пароль
+        </button>
       </form>
-      {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {message && <p style={styles.success}>{message}</p>}
+      {error && <p style={styles.error}>{error}</p>}
     </div>
   );
+};
+
+const styles = {
+  container: {
+    maxWidth: "400px",
+    margin: "50px auto",
+    padding: "20px",
+    border: "1px solid #ccc",
+    borderRadius: "10px",
+    backgroundColor: "#f9f9f9",
+    textAlign: "center",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "15px",
+  },
+  label: {
+    display: "flex",
+    flexDirection: "column",
+    textAlign: "left",
+  },
+  input: {
+    padding: "10px",
+    fontSize: "16px",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+  },
+  button: {
+    padding: "10px 20px",
+    fontSize: "16px",
+    backgroundColor: "#1a73e8",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  success: {
+    color: "green",
+    fontWeight: "bold",
+  },
+  error: {
+    color: "red",
+    fontWeight: "bold",
+  },
 };
 
 export default PasswordReset;
