@@ -3,13 +3,15 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-d
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import PasswordReset from "./pages/PasswordReset";
+import Register from "./pages/Register.jsx";
+import Login from "./pages/Login.jsx";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Проверяем наличие токена авторизации
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("session_token");
     setIsAuthenticated(!!token); // Если токен есть, пользователь авторизован
   }, []);
 
@@ -18,14 +20,14 @@ function App() {
       <Layout isAuthenticated={isAuthenticated}>
         <Routes>
           <Route path="/" element={<Home />} />
-          {/*<Route*/}
-          {/*  path="/login"*/}
-          {/*  element={!isAuthenticated ? <div>Логин</div> : <Navigate to="/" />}*/}
-          {/*/>*/}
-          {/*<Route*/}
-          {/*  path="/register"*/}
-          {/*  element={!isAuthenticated ? <div>Регистрация</div> : <Navigate to="/" />}*/}
-          {/*/>*/}
+          <Route
+            path="/login"
+            element={!isAuthenticated ? <Login />: <Navigate to="/" />}
+          />
+          <Route
+            path="/register"
+            element={!isAuthenticated ? <Register />: <Navigate to="/" />}
+          />
           <Route
             path="/password-reset"
             element={!isAuthenticated ? <PasswordReset /> : <Navigate to="/" />}
