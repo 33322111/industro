@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-const Header = ({ isAuthenticated }) => {
+const Header = ({ isAuthenticated, handleLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -12,6 +12,7 @@ const Header = ({ isAuthenticated }) => {
       </div>
       <div>
         {location.pathname === "/" && !isAuthenticated ? (
+          // Главная страница для неавторизованных пользователей
           <>
             <button style={styles.authButton} onClick={() => navigate("/login")}>
               Войти
@@ -23,13 +24,11 @@ const Header = ({ isAuthenticated }) => {
               Регистрация
             </button>
           </>
-        ) : (
+        ) : isAuthenticated ? (
+          // Для авторизованных пользователей
           <>
-            <button style={styles.authButton} onClick={() => navigate(-1)}>
-              Назад
-            </button>
             <button
-              style={{ ...styles.authButton, marginLeft: "10px" }}
+              style={styles.authButton}
               onClick={() => navigate("/profile")}
             >
               Личный кабинет
@@ -37,14 +36,18 @@ const Header = ({ isAuthenticated }) => {
             <button
               style={{ ...styles.authButton, marginLeft: "10px" }}
               onClick={() => {
-                // Очистка токена или данных авторизации
-                localStorage.removeItem("authToken");
-                navigate("/login");
+                console.log("Кнопка 'Выйти' нажата");
+                handleLogout();
               }}
             >
               Выйти
             </button>
           </>
+        ) : (
+          // Назад на других страницах для неавторизованных
+          <button style={styles.authButton} onClick={() => navigate("/")}>
+            Назад
+          </button>
         )}
       </div>
     </header>

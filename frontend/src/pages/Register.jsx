@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
-const Register = () => {
+const Register = ({ onLogin }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
     confirmPassword: "",
-    role: "client", // 'client' для заказчика, 'contractor' для исполнителя
+    role: "client", // Роль: "client" (заказчик) или "contractor" (исполнитель)
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -28,6 +28,7 @@ const Register = () => {
     }
 
     try {
+      // Отправляем данные регистрации на сервер
       const response = await api.post("/register/", {
         username: formData.username,
         email: formData.email,
@@ -35,9 +36,20 @@ const Register = () => {
         is_client: formData.role === "client",
         is_contractor: formData.role === "contractor",
       });
+
+      // Получаем токен для автоматического входа
+      const loginResponse = await api.post("/login/", {
+        username: formData.username,
+        password: formData.password,
+      });
+
+      const { access } = loginResponse.data;
+      onLogin(access); // Вызываем onLogin для обновления статуса авторизации
       setError("");
       setSuccess("Регистрация успешна!");
-      setTimeout(() => navigate("/"), 2000); // Перенаправление через 2 секунды
+
+      // Перенаправляем на главную страницу
+      navigate("/");
     } catch (err) {
       setError("Ошибка регистрации. Проверьте введённые данные.");
       setSuccess("");

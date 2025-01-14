@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
-const Login = () => {
+const Login = ({ onLogin }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
@@ -17,14 +17,9 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await api.post("/login/", formData); // Отправляем username и password на сервер
+      const response = await api.post("/login/", formData);
       const { access } = response.data;
-
-      // Сохраняем токен в localStorage
-      localStorage.setItem("authToken", access);
-      setError("");
-
-      // Перенаправляем пользователя на главную страницу
+      onLogin(access); // Вызываем onLogin с токеном
       navigate("/");
     } catch (err) {
       setError("Ошибка входа. Проверьте введённые данные.");
@@ -62,12 +57,6 @@ const Login = () => {
         </button>
       </form>
       {error && <p style={styles.error}>{error}</p>}
-      <button
-        onClick={() => navigate("/password-reset")}
-        style={styles.linkButton}
-      >
-        Восстановить пароль
-      </button>
     </div>
   );
 };

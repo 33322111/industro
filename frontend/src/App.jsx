@@ -2,45 +2,62 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
-import PasswordReset from "./pages/PasswordReset";
-import Register from "./pages/Register.jsx";
-import Login from "./pages/Login.jsx";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import PasswordReset from "./pages/PasswordReset.jsx";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Проверяем наличие токена авторизации
   useEffect(() => {
-    const token = localStorage.getItem("session_token");
-    setIsAuthenticated(!!token); // Если токен есть, пользователь авторизован
+    // Проверяем наличие токена в localStorage при загрузке приложения
+    const token = localStorage.getItem("authToken");
+    setIsAuthenticated(!!token); // Устанавливаем true, если токен существует
   }, []);
+
+  const handleLogin = (token) => {
+    // Сохраняем токен и обновляем состояние
+    localStorage.setItem("authToken", token);
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    console.log("Вызван handleLogout"); // Лог для проверки
+    // Удаляем токен и обновляем состояние
+    localStorage.removeItem("authToken");
+    setIsAuthenticated(false);
+  };
 
   return (
     <Router>
-      <Layout isAuthenticated={isAuthenticated}>
+      <Layout isAuthenticated={isAuthenticated} handleLogout={handleLogout}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route
             path="/login"
-            element={!isAuthenticated ? <Login />: <Navigate to="/" />}
+            element={!isAuthenticated ? (
+              <Login onLogin={handleLogin} />
+            ) : (
+              <Navigate to="/" />
+            )}
           />
           <Route
             path="/register"
-            element={!isAuthenticated ? <Register />: <Navigate to="/" />}
+            element={!isAuthenticated ? (
+              <Register onLogin={handleLogin} />
+            ) : (
+              <Navigate to="/" />
+            )}
           />
           <Route
             path="/password-reset"
-            element={!isAuthenticated ? <PasswordReset /> : <Navigate to="/" />}
+            element={!isAuthenticated ? (
+              <PasswordReset onLogin={handleLogin} />
+            ) : (
+              <Navigate to="/" />
+            )}
           />
-          {/*<Route*/}
-          {/*  path="/password-change"*/}
-          {/*  element={isAuthenticated ? <PasswordChange /> : <Navigate to="/login" />}*/}
-          {/*/>*/}
-          {/*<Route*/}
-          {/*  path="/profile"*/}
-          {/*  element={isAuthenticated ? <div>Личный кабинет</div> : <Navigate to="/login" />}*/}
-          {/*/>*/}
-          {/*<Route path="*" element={<Navigate to="/" />} />*/}
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Layout>
     </Router>

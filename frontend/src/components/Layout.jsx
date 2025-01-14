@@ -1,10 +1,10 @@
 import React from "react";
 import Header from "./Header.jsx";
 
-const Layout = ({ children, isAuthenticated }) => {
+const Layout = ({ children, isAuthenticated, handleLogout }) => {
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <Header isAuthenticated={isAuthenticated} />
+      <Header isAuthenticated={isAuthenticated} handleLogout={handleLogout} />
       <main style={styles.main}>{children}</main>
       <footer style={styles.footer}>
         <p>&copy; {new Date().getFullYear()} Industro. Все права защищены.</p>
