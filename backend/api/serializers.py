@@ -3,9 +3,11 @@ from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField(required=False)
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'is_client', 'is_contractor']
+        fields = ["username", "email", "is_client", "is_contractor", "avatar", "company_info", "address"]
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -25,3 +27,19 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])  # Шифруем пароль
         user.save()
         return user
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name', 'profile']
+
+
+class ProfileDetailSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField(required=False)
+    address = serializers.CharField(required=False)
+    company_info = serializers.CharField(required=False)
+
+    class Meta:
+        model = User
+        fields = ['avatar', 'address', 'company_info', 'role']
