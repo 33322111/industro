@@ -120,9 +120,9 @@ const Profile = () => {
           <div>
             <strong>Роль:</strong> {" "}
             {profileData.is_client ? (
-              "Клиент"
-            ) : (
               "Заказчик"
+            ) : (
+              "Исполнитель"
             )}
           </div>
           <div>
