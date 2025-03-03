@@ -1,18 +1,39 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import api from "../services/api.js";
 
 const Header = ({ isAuthenticated, handleLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  const [profileData, setProfileData] = useState({
+    avatar: null,
+    username: "",
+    email: "",
+    role: "",
+    company_info: "",
+    address: "",
+  });
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const response = await api.get("/profile/");
+      setProfileData(response.data);
+    } catch (error) {
+      console.error("Ошибка загрузки профиля:", error);
+    }
+  };
 
   const handleSearch = () => {
     console.log("Поиск: ", searchQuery);
-    // Здесь можно добавить логику для поиска
   };
 
   // Список страниц, где не нужно отображать поле поиска
-  const hideSearchBarPages = ["/login", "/register", "/password-reset", "/profile"];
+  const hideSearchBarPages = ["/login", "/register", "/change-password", "/profile"];
   const shouldShowSearchBar = !hideSearchBarPages.includes(location.pathname);
 
   return (
@@ -32,18 +53,22 @@ const Header = ({ isAuthenticated, handleLogout }) => {
           <button style={styles.searchButton} onClick={handleSearch}>Найти</button>
         </div>
       )}
+      {isAuthenticated && profileData.is_client && (
+        <button style={styles.createAdButton} onClick={() => navigate("/create-ad")}>Создать объявление</button>
+      )}
       <div style={styles.iconsContainer}>
-        {location.pathname === "/" && !isAuthenticated ? (
-          // Главная страница для неавторизованных пользователей
+        {location.pathname === "/profile" ? (
           <>
-            <button style={styles.authButton} onClick={() => navigate("/login")}>Войти</button>
+            <button style={styles.authButton} onClick={() => navigate(-1)}>Назад</button>
             <button
               style={{ ...styles.authButton, marginLeft: "10px" }}
-              onClick={() => navigate("/register")}
-            >Регистрация</button>
+              onClick={() => {
+                console.log("Кнопка 'Выйти' нажата");
+                handleLogout();
+              }}
+            >Выйти</button>
           </>
         ) : isAuthenticated ? (
-          // Для авторизованных пользователей
           <>
             <button style={styles.authButton} onClick={() => navigate("/profile")}>Личный кабинет</button>
             <button
@@ -55,8 +80,13 @@ const Header = ({ isAuthenticated, handleLogout }) => {
             >Выйти</button>
           </>
         ) : (
-          // Назад на других страницах для неавторизованных
-          <button style={styles.authButton} onClick={() => navigate("/")}>Назад</button>
+          <>
+            <button style={styles.authButton} onClick={() => navigate("/login")}>Войти</button>
+            <button
+              style={{ ...styles.authButton, marginLeft: "10px" }}
+              onClick={() => navigate("/register")}
+            >Регистрация</button>
+          </>
         )}
       </div>
     </header>
@@ -102,15 +132,20 @@ const styles = {
     fontSize: "16px",
     fontWeight: "bold",
   },
+  createAdButton: {
+    padding: "10px 20px",
+    backgroundColor: "white",
+    color: "#1a73e8",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontSize: "16px",
+    fontWeight: "bold",
+    marginLeft: "10px",
+  },
   iconsContainer: {
     display: "flex",
     alignItems: "center",
-  },
-  favoriteIcon: {
-    width: "30px",
-    height: "30px",
-    cursor: "pointer",
-    marginRight: "10px",
   },
   authButton: {
     padding: "10px 20px",
