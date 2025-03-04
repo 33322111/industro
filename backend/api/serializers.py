@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, Ad
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -43,3 +43,22 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['avatar', 'address', 'company_info', 'role']
+
+
+class AdSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(read_only=True)  # Показываем имя пользователя вместо ID
+
+    class Meta:
+        model = Ad
+        fields = "__all__"
+
+    def validate(self, data):
+        # Валидация цены
+        if data.get("price_type") == "fixed" and not data.get("fixed_price"):
+            raise serializers.ValidationError("Пожалуйста, укажите фиксированную цену.")
+        if data.get("price_type") == "range" and (not data.get("price_from") or not data.get("price_to")):
+            raise serializers.ValidationError("Пожалуйста, укажите диапазон цен.")
+        # Валидация сроков проекта
+        if data.get("execution_time") == "urgent" and not data.get("project_deadline"):
+            raise serializers.ValidationError("Пожалуйста, укажите сроки проекта.")
+        return data

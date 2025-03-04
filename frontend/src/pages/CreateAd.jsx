@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 const categories = {
   "Проектирование и инжиниринг": [
@@ -29,17 +31,18 @@ const categories = {
 };
 
 const CreateAdPage = () => {
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [priceType, setPriceType] = useState("Фиксированная цена");
+  const [priceType, setPriceType] = useState("fixed");
   const [priceFrom, setPriceFrom] = useState("");
   const [priceTo, setPriceTo] = useState("");
   const [fixedPrice, setFixedPrice] = useState("");
-  const [executionTime, setExecutionTime] = useState("Разовое задание");
+  const [executionTime, setExecutionTime] = useState("one_time");
   const [projectDeadline, setProjectDeadline] = useState("");
-  const [location, setLocation] = useState("На месте");
+  const [location, setLocation] = useState("on_site");
   const [city, setCity] = useState("");
   const [documents, setDocuments] = useState(null);
   const [error, setError] = useState("");
@@ -54,28 +57,28 @@ const CreateAdPage = () => {
     setSelectedSubcategory(event.target.value);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedCategory || !selectedSubcategory || !title || !description) {
       setError("Пожалуйста, заполните все обязательные поля.");
       return;
     }
 
-    if (priceType === "Фиксированная цена" && !fixedPrice) {
+    if (priceType === "fixed" && !fixedPrice) {
       setError("Пожалуйста, укажите фиксированную цену.");
       return;
     }
 
-    if (priceType === "Диапазон" && (!priceFrom || !priceTo)) {
+    if (priceType === "range" && (!priceFrom || !priceTo)) {
       setError("Пожалуйста, укажите диапазон цен.");
       return;
     }
 
-    if (executionTime === "Срочный проект" && !projectDeadline) {
+    if (executionTime === "urgent" && !projectDeadline) {
       setError("Пожалуйста, укажите сроки проекта.");
       return;
     }
 
-    if (location === "На месте" && !city) {
+    if (location === "on_site" && !city) {
       setError("Пожалуйста, укажите город.");
       return;
     }
@@ -87,22 +90,37 @@ const CreateAdPage = () => {
 
     setError("");
 
-    console.log("Объявление создано:", {
-      category: selectedCategory,
-      subcategory: selectedSubcategory,
-      title,
-      description,
-      priceType,
-      priceFrom,
-      priceTo,
-      fixedPrice,
-      executionTime,
-      projectDeadline,
-      location,
-      city,
-      documents,
-    });
-    alert("Объявление создано!");
+    const formData = new FormData();
+    formData.append("category", selectedCategory);
+    formData.append("subcategory", selectedSubcategory);
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("price_type", priceType);
+    formData.append("price_from", priceFrom);
+    formData.append("price_to", priceTo);
+    formData.append("fixed_price", fixedPrice);
+    formData.append("execution_time", executionTime);
+    formData.append("project_deadline", projectDeadline);
+    formData.append("location", location);
+    formData.append("city", city);
+    for (let i = 0; i < documents.length; i++) {
+      formData.append("documents", documents[i]);
+    }
+
+    try {
+      const response = await api.post("/ads/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      if (response.status === 201) {
+        alert("Объявление успешно создано!");
+        navigate("/");
+      }
+    } catch (error) {
+      setError("Ошибка при создании объявления. Пожалуйста, попробуйте снова.");
+      console.error("Ошибка:", error);
+    }
   };
 
   return (
@@ -165,13 +183,13 @@ const CreateAdPage = () => {
             onChange={(e) => setPriceType(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           >
-            <option>Фиксированная цена</option>
-            <option>Диапазон</option>
-            <option>Договорная</option>
+            <option value="fixed">Фиксированная цена</option>
+            <option value="range">Диапазон</option>
+            <option value="negotiable">Договорная</option>
           </select>
         </div>
 
-        {priceType === "Фиксированная цена" && (
+        {priceType === "fixed" && (
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-700">Фиксированная цена (₽)</label>
             <input
@@ -183,7 +201,7 @@ const CreateAdPage = () => {
           </div>
         )}
 
-        {priceType === "Диапазон" && (
+        {priceType === "range" && (
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-700">Цена от (₽)</label>
@@ -213,13 +231,13 @@ const CreateAdPage = () => {
             onChange={(e) => setExecutionTime(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           >
-            <option>Разовое задание</option>
-            <option>Долгосрочное сотрудничество</option>
-            <option>Срочный проект</option>
+            <option value="one_time">Разовое задание</option>
+            <option value="long_term">Долгосрочное сотрудничество</option>
+            <option value="urgent">Срочный проект</option>
           </select>
         </div>
 
-        {executionTime === "Срочный проект" && (
+        {executionTime === "urgent" && (
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-700">Сроки проекта (до N дней)</label>
             <input
@@ -238,12 +256,12 @@ const CreateAdPage = () => {
             onChange={(e) => setLocation(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           >
-            <option>На месте</option>
-            <option>Удаленно</option>
+            <option value="on_site">На месте</option>
+            <option value="remote">Удаленно</option>
           </select>
         </div>
 
-        {location === "На месте" && (
+        {location === "on_site" && (
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-700">Город</label>
             <input

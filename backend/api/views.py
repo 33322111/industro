@@ -1,7 +1,7 @@
-from rest_framework import generics
+from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import User
-from .serializers import UserSerializer, RegisterSerializer
+from .models import User, Ad
+from .serializers import UserSerializer, RegisterSerializer, AdSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -51,3 +51,21 @@ class ProfileDetailView(APIView):
             print("Данные сохранены в БД:", serializer.data)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdListCreateView(generics.ListCreateAPIView):
+    queryset = Ad.objects.all().order_by("-created_at")
+    serializer_class = AdSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)  # Автоматически устанавливаем текущего пользователя автором
+
+
+class AdDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Ad.objects.all()
+    serializer_class = AdSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        return Ad.objects.filter(author=self.request.user)  # Ограничиваем редактирование только своими объявлениями
