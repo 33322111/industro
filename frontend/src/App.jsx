@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import PasswordReset from "./pages/PasswordReset.jsx";
 import Profile from "./pages/Profile.jsx";
+import CreateAd from "./pages/CreateAd.jsx";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -61,6 +62,11 @@ function App() {
           <Route
             path="/profile"
             element={<Profile />}
+          />
+          <Route path="*" element={<Navigate to="/" />} />
+          <Route
+            path="/create-ad"
+            element={<CreateAd />}
           />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

@@ -54,7 +54,7 @@ const Header = ({ isAuthenticated, handleLogout }) => {
         </div>
       )}
       {isAuthenticated && profileData.is_client && (
-        <button style={styles.createAdButton} onClick={() => navigate("/create-ad")}>Создать объявление</button>
+        <button style={styles.createAdButton} onClick={() => navigate("/create-ad")}>Разместить объявление</button>
       )}
       <div style={styles.iconsContainer}>
         {location.pathname === "/profile" ? (
