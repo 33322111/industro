@@ -79,4 +79,4 @@ class UserAdsView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Только авторизованные пользователи
 
     def get_queryset(self):
-        return Ad.objects.all()
+        return Ad.objects.all().filter(author=self.request.user)
