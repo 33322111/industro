@@ -1,34 +1,104 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import api from "../services/api";
 
 const Home = () => {
-  const navigate = useNavigate();
+  const [ads, setAds] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchUserAds = async () => {
+      try {
+        const response = await api.get("/user-ads/");
+        setAds(response.data);
+      } catch (err) {
+        setError("Ошибка загрузки объявлений.");
+        console.error("Ошибка загрузки объявлений:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserAds();
+  }, []);
 
   return (
     <div style={styles.container}>
-
-
-      {/* Main Content */}
       <div style={styles.content}>
         <h2>Добро пожаловать в Industro</h2>
-        <p>
-          Ваша платформа для упрощения поиска подрядчиков и продвижения
-          инженерных услуг. Решение для малого и среднего бизнеса.
-        </p>
+        <p>Ваша платформа для упрощения поиска подрядчиков и продвижения инженерных услуг.</p>
+      </div>
+
+      <div style={styles.adsContainer}>
+        <h3 style={styles.sectionTitle}>Ваши объявления</h3>
+
+        {loading && <p style={styles.loading}>Загрузка...</p>}
+        {error && <p style={styles.error}>{error}</p>}
+        {ads.length === 0 && !loading && <p style={styles.noAds}>У вас пока нет объявлений.</p>}
+
+        <ul style={styles.adList}>
+          {ads.map((ad) => (
+            <li key={ad.id} style={styles.adItem}>
+              <Link to={`/ads/${ad.id}/`} style={styles.adLink}>
+                <h4>{ad.title}</h4>
+                <p>{ad.category} / {ad.subcategory}</p>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
 };
 
 const styles = {
-  content: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    textAlign: "center",
+  container: {
+    maxWidth: "800px",
+    margin: "0 auto",
     padding: "20px",
+  },
+  content: {
+    textAlign: "center",
+    marginBottom: "30px",
+  },
+  adsContainer: {
+    padding: "20px",
+    border: "1px solid #ddd",
+    borderRadius: "8px",
+    backgroundColor: "#f9f9f9",
+  },
+  sectionTitle: {
+    fontSize: "20px",
+    fontWeight: "bold",
+    marginBottom: "10px",
+  },
+  loading: {
+    textAlign: "center",
+    color: "gray",
+  },
+  error: {
+    textAlign: "center",
+    color: "red",
+  },
+  noAds: {
+    textAlign: "center",
+    color: "gray",
+  },
+  adList: {
+    listStyle: "none",
+    padding: 0,
+  },
+  adItem: {
+    padding: "10px",
+    borderBottom: "1px solid #ddd",
+  },
+  adLink: {
+    textDecoration: "none",
+    color: "#007bff",
+    fontSize: "16px",
+    fontWeight: "bold",
+    display: "block",
   },
 };
 

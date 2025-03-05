@@ -68,4 +68,15 @@ class AdDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        return Ad.objects.filter(author=self.request.user)  # Ограничиваем редактирование только своими объявлениями
+        return Ad.objects.all()
+
+
+class UserAdsView(generics.ListAPIView):
+    """
+    API для получения всех объявлений текущего пользователя.
+    """
+    serializer_class = AdSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Только авторизованные пользователи
+
+    def get_queryset(self):
+        return Ad.objects.all()
