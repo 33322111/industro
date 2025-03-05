@@ -6,22 +6,31 @@ const Home = () => {
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [profile, setProfile] = useState({
+    is_client: false,
+    is_contractor: false,
+  });
 
   useEffect(() => {
-    const fetchUserAds = async () => {
+    const fetchUserData = async () => {
       try {
-        const response = await api.get("/user-ads/");
-        setAds(response.data);
+        const profileResponse = await api.get("/profile/");
+        setProfile(profileResponse.data);
+
+        const adsResponse = await api.get("/user-ads/");
+        setAds(adsResponse.data);
       } catch (err) {
-        setError("Ошибка загрузки объявлений.");
-        console.error("Ошибка загрузки объявлений:", err);
+        setError("Ошибка загрузки данных.");
+        console.error("Ошибка загрузки данных:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserAds();
+    fetchUserData();
   }, []);
+
+  const sectionTitle = profile.is_client ? "Ваши объявления" : "Ваши резюме";
 
   return (
     <div style={styles.container}>
@@ -31,11 +40,11 @@ const Home = () => {
       </div>
 
       <div style={styles.adsContainer}>
-        <h3 style={styles.sectionTitle}>Ваши объявления</h3>
+        <h3 style={styles.sectionTitle}>{sectionTitle}</h3>
 
         {loading && <p style={styles.loading}>Загрузка...</p>}
         {error && <p style={styles.error}>{error}</p>}
-        {ads.length === 0 && !loading && <p style={styles.noAds}>У вас пока нет объявлений.</p>}
+        {ads.length === 0 && !loading && <p style={styles.noAds}>У вас пока нет записей.</p>}
 
         <ul style={styles.adList}>
           {ads.map((ad) => (

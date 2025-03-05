@@ -4,6 +4,7 @@ import api from "../services/api.js";
 import logoutIcon from "../assets/logout_button.png"; // Иконка выхода
 import profileIcon from "../assets/profile_button.png"; // Иконка профиля
 import messagesIcon from "../assets/messages_button.png"; // Иконка сообщений
+import filtersIcon from "../assets/filters_button.png"; // Иконка фильтров
 
 const Header = ({ isAuthenticated, handleLogout }) => {
   const navigate = useNavigate();
@@ -39,6 +40,11 @@ const Header = ({ isAuthenticated, handleLogout }) => {
     console.log("Поиск: ", searchQuery);
   };
 
+  const handleFilters = () => {
+    console.log("Открыть фильтры");
+    // Здесь можно добавить логику открытия модального окна с фильтрами
+  };
+
   // Определяем плейсхолдер в поле поиска
   const searchPlaceholder = profileData.is_client
     ? "Поиск по исполнителям"
@@ -62,12 +68,26 @@ const Header = ({ isAuthenticated, handleLogout }) => {
             onChange={(e) => setSearchQuery(e.target.value)}
             style={styles.searchInput}
           />
+          <button style={styles.filterButton} onClick={handleFilters}>
+            <img src={filtersIcon} alt="Фильтры" style={styles.icon} />
+          </button>
           <button style={styles.searchButton} onClick={handleSearch}>Найти</button>
         </div>
       )}
-      {isAuthenticated && profileData.is_client && (
-        <button style={styles.createAdButton} onClick={() => navigate("/create-ad")}>Разместить объявление</button>
+
+      {/* У заказчиков кнопка "Разместить объявление", у исполнителей - "Создать резюме" */}
+      {isAuthenticated && (
+        profileData.is_client ? (
+          <button style={styles.actionButton} onClick={() => navigate("/create-ad")}>
+            Разместить объявление
+          </button>
+        ) : profileData.is_contractor ? (
+          <button style={styles.actionButton} onClick={() => navigate("/create-resume")}>
+            Создать резюме
+          </button>
+        ) : null
       )}
+
       <div style={styles.iconsContainer}>
         {isAuthenticated ? (
           <>
@@ -124,6 +144,15 @@ const styles = {
     outline: "none",
     flexGrow: 1,
   },
+  filterButton: {
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    padding: "5px",
+    display: "flex",
+    alignItems: "center",
+    marginRight: "10px",
+  },
   searchButton: {
     padding: "10px 20px",
     backgroundColor: "#1a73e8",
@@ -134,7 +163,7 @@ const styles = {
     fontSize: "16px",
     fontWeight: "bold",
   },
-  createAdButton: {
+  actionButton: {
     padding: "10px 20px",
     backgroundColor: "white",
     color: "#1a73e8",
@@ -178,7 +207,7 @@ const styles = {
     alignItems: "center",
   },
   icon: {
-    width: "30px",  // Размер иконок профиля, сообщений и выхода
+    width: "30px",  // Размер иконок профиля, сообщений, фильтров и выхода
     height: "30px",
   },
 };
