@@ -1,6 +1,9 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/api.js";
+import logoutIcon from "../assets/logout_button.png"; // Иконка выхода
+import profileIcon from "../assets/profile_button.png"; // Иконка профиля
+import messagesIcon from "../assets/messages_button.png"; // Иконка сообщений
 
 const Header = ({ isAuthenticated, handleLogout }) => {
   const navigate = useNavigate();
@@ -13,11 +16,15 @@ const Header = ({ isAuthenticated, handleLogout }) => {
     role: "",
     company_info: "",
     address: "",
+    is_client: false,
+    is_contractor: false,
   });
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    if (isAuthenticated) {
+      fetchProfile();
+    }
+  }, [isAuthenticated]);
 
   const fetchProfile = async () => {
     try {
@@ -32,6 +39,11 @@ const Header = ({ isAuthenticated, handleLogout }) => {
     console.log("Поиск: ", searchQuery);
   };
 
+  // Определяем плейсхолдер в поле поиска
+  const searchPlaceholder = profileData.is_client
+    ? "Поиск по исполнителям"
+    : "Поиск по объявлениям";
+
   // Список страниц, где не нужно отображать поле поиска
   const hideSearchBarPages = ["/login", "/register", "/change-password", "/profile"];
   const shouldShowSearchBar = !hideSearchBarPages.includes(location.pathname);
@@ -45,7 +57,7 @@ const Header = ({ isAuthenticated, handleLogout }) => {
         <div style={styles.searchContainer}>
           <input
             type="text"
-            placeholder="Поиск по объявлениям"
+            placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={styles.searchInput}
@@ -57,27 +69,17 @@ const Header = ({ isAuthenticated, handleLogout }) => {
         <button style={styles.createAdButton} onClick={() => navigate("/create-ad")}>Разместить объявление</button>
       )}
       <div style={styles.iconsContainer}>
-        {location.pathname === "/profile" ? (
+        {isAuthenticated ? (
           <>
-            <button style={styles.authButton} onClick={() => navigate(-1)}>Назад</button>
-            <button
-              style={{ ...styles.authButton, marginLeft: "10px" }}
-              onClick={() => {
-                console.log("Кнопка 'Выйти' нажата");
-                handleLogout();
-              }}
-            >Выйти</button>
-          </>
-        ) : isAuthenticated ? (
-          <>
-            <button style={styles.authButton} onClick={() => navigate("/profile")}>Личный кабинет</button>
-            <button
-              style={{ ...styles.authButton, marginLeft: "10px" }}
-              onClick={() => {
-                console.log("Кнопка 'Выйти' нажата");
-                handleLogout();
-              }}
-            >Выйти</button>
+            <button style={styles.iconButton} onClick={() => navigate("/messages")}>
+              <img src={messagesIcon} alt="Сообщения" style={styles.icon} />
+            </button>
+            <button style={styles.iconButton} onClick={() => navigate("/profile")}>
+              <img src={profileIcon} alt="Профиль" style={styles.icon} />
+            </button>
+            <button style={styles.logoutButton} onClick={handleLogout}>
+              <img src={logoutIcon} alt="Выйти" style={styles.icon} />
+            </button>
           </>
         ) : (
           <>
@@ -156,6 +158,28 @@ const styles = {
     cursor: "pointer",
     fontSize: "16px",
     fontWeight: "bold",
+    marginRight: "10px",
+  },
+  iconButton: {
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    padding: "5px",
+    display: "flex",
+    alignItems: "center",
+    marginRight: "10px",
+  },
+  logoutButton: {
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    padding: "5px",
+    display: "flex",
+    alignItems: "center",
+  },
+  icon: {
+    width: "30px",  // Размер иконок профиля, сообщений и выхода
+    height: "30px",
   },
 };
 
