@@ -4,6 +4,7 @@ import api from "../services/api";
 
 const Home = () => {
   const [ads, setAds] = useState([]);
+  const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [profile, setProfile] = useState({
@@ -15,10 +16,19 @@ const Home = () => {
     const fetchUserData = async () => {
       try {
         const profileResponse = await api.get("/profile/");
-        setProfile(profileResponse.data);
+        const userProfile = profileResponse.data;
+        setProfile(userProfile);
 
-        const adsResponse = await api.get("/user-ads/");
-        setAds(adsResponse.data);
+        if (userProfile.is_client) {
+          const adsResponse = await api.get("/user-ads/");
+          setAds(adsResponse.data);
+        }
+
+        if (userProfile.is_contractor) {
+          const resumesResponse = await api.get("/user-resumes/");
+          setResumes(resumesResponse.data);
+        }
+
       } catch (err) {
         setError("Ошибка загрузки данных.");
         console.error("Ошибка загрузки данных:", err);
@@ -30,7 +40,11 @@ const Home = () => {
     fetchUserData();
   }, []);
 
-  const sectionTitle = profile.is_client ? "Ваши объявления" : "Ваши резюме";
+  const sectionTitle = profile.is_client
+    ? "Ваши объявления"
+    : profile.is_contractor
+    ? "Ваши резюме"
+    : "";
 
   return (
     <div style={styles.container}>
@@ -44,18 +58,44 @@ const Home = () => {
 
         {loading && <p style={styles.loading}>Загрузка...</p>}
         {error && <p style={styles.error}>{error}</p>}
-        {ads.length === 0 && !loading && <p style={styles.noAds}>У вас пока нет записей.</p>}
 
-        <ul style={styles.adList}>
-          {ads.map((ad) => (
-            <li key={ad.id} style={styles.adItem}>
-              <Link to={`/ads/${ad.id}/`} style={styles.adLink}>
-                <h4>{ad.title}</h4>
-                <p>{ad.category} / {ad.subcategory}</p>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        {/* Объявления */}
+        {profile.is_client && (
+          <>
+            {ads.length === 0 && !loading && (
+              <p style={styles.noAds}>У вас пока нет объявлений.</p>
+            )}
+            <ul style={styles.adList}>
+              {ads.map((ad) => (
+                <li key={ad.id} style={styles.adItem}>
+                  <Link to={`/ads/${ad.id}/`} style={styles.adLink}>
+                    <h4>{ad.title}</h4>
+                    <p>{ad.category} / {ad.subcategory}</p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {/* Резюме */}
+        {profile.is_contractor && (
+          <>
+            {resumes.length === 0 && !loading && (
+              <p style={styles.noAds}>У вас пока нет резюме.</p>
+            )}
+            <ul style={styles.adList}>
+              {resumes.map((resume) => (
+                <li key={resume.id} style={styles.adItem}>
+                  <Link to={`/resumes/${resume.id}/`} style={styles.adLink}>
+                    <h4>{resume.title}</h4>
+                    <p>{resume.category} / {resume.subcategory}</p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </div>
     </div>
   );

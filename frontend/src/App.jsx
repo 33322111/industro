@@ -8,6 +8,8 @@ import PasswordReset from "./pages/PasswordReset.jsx";
 import Profile from "./pages/Profile.jsx";
 import CreateAd from "./pages/CreateAd.jsx";
 import AdDetailPage from "./pages/AdDetailPage.jsx";
+import CreateResume from "./pages/CreateResume.jsx";
+import ResumeDetailPage from "./pages/ResumeDetailPage.jsx";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -70,8 +72,14 @@ function App() {
             element={<CreateAd />}
           />
           <Route path="*" element={<Navigate to="/" />} />
-          <Route path="/ads/:id/" element={<AdDetailPage />} />
           <Route path="*" element={<Navigate to="/" />} />
+          <Route
+            path="/create-resume"
+            element={<CreateResume />}
+          />
+          <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/ads/:id/" element={<AdDetailPage />} />
+          <Route path="/resumes/:id/" element={<ResumeDetailPage />} />
         </Routes>
       </Layout>
     </Router>

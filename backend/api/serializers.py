@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Ad
+from .models import User, Ad, Resume, ResumeDocument
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -62,3 +62,33 @@ class AdSerializer(serializers.ModelSerializer):
         if data.get("execution_time") == "urgent" and not data.get("project_deadline"):
             raise serializers.ValidationError("Пожалуйста, укажите сроки проекта.")
         return data
+
+
+class ResumeDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResumeDocument
+        fields = ['id', 'file']
+
+
+class ResumeSerializer(serializers.ModelSerializer):
+    documents = ResumeDocumentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Resume
+        fields = [
+            'id',
+            'user',
+            'category',
+            'subcategory',
+            'title',
+            'description',
+            'price_type',
+            'fixed_price',
+            'price_from',
+            'price_to',
+            'location',
+            'city',
+            'documents',
+            'created_at'
+        ]
+        read_only_fields = ['user', 'created_at']
