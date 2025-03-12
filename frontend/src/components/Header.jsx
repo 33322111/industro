@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/api.js";
-import logoutIcon from "../assets/logout_button.png"; // Иконка выхода
-import profileIcon from "../assets/profile_button.png"; // Иконка профиля
-import messagesIcon from "../assets/messages_button.png"; // Иконка сообщений
-import filtersIcon from "../assets/filters_button.png"; // Иконка фильтров
+import logoutIcon from "../assets/logout_button.png";
+import profileIcon from "../assets/profile_button.png";
+import messagesIcon from "../assets/messages_button.png";
+import filtersIcon from "../assets/filters_button.png";
 
 const Header = ({ isAuthenticated, handleLogout }) => {
   const navigate = useNavigate();
@@ -36,21 +36,32 @@ const Header = ({ isAuthenticated, handleLogout }) => {
     }
   };
 
-  const handleSearch = () => {
-    console.log("Поиск: ", searchQuery);
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      return;
+    }
+
+    try {
+      const response = await api.get(`/ads/search/?search=${encodeURIComponent(searchQuery)}`);
+      const searchResults = response.data;
+
+      console.log("Результаты поиска:", searchResults);
+
+      navigate("/search-results", { state: { results: searchResults } });
+    } catch (error) {
+      console.error("Ошибка при поиске:", error);
+    }
   };
 
   const handleFilters = () => {
     console.log("Открыть фильтры");
-    // Здесь можно добавить логику открытия модального окна с фильтрами
+    // TODO: добавить модалку с фильтрами или переход на страницу фильтрации
   };
 
-  // Определяем плейсхолдер в поле поиска
   const searchPlaceholder = profileData.is_client
     ? "Поиск по исполнителям"
     : "Поиск по объявлениям";
 
-  // Список страниц, где не нужно отображать поле поиска
   const hideSearchBarPages = ["/login", "/register", "/change-password", "/profile"];
   const shouldShowSearchBar = !hideSearchBarPages.includes(location.pathname);
 
@@ -59,6 +70,7 @@ const Header = ({ isAuthenticated, handleLogout }) => {
       <div>
         <h1 style={styles.logo} onClick={() => navigate("/")}>Industro</h1>
       </div>
+
       {shouldShowSearchBar && (
         <div style={styles.searchContainer}>
           <input
@@ -66,6 +78,7 @@ const Header = ({ isAuthenticated, handleLogout }) => {
             placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             style={styles.searchInput}
           />
           <button style={styles.filterButton} onClick={handleFilters}>
@@ -75,7 +88,6 @@ const Header = ({ isAuthenticated, handleLogout }) => {
         </div>
       )}
 
-      {/* У заказчиков кнопка "Разместить объявление", у исполнителей - "Создать резюме" */}
       {isAuthenticated && (
         profileData.is_client ? (
           <button style={styles.actionButton} onClick={() => navigate("/create-ad")}>
@@ -207,7 +219,7 @@ const styles = {
     alignItems: "center",
   },
   icon: {
-    width: "30px",  // Размер иконок профиля, сообщений, фильтров и выхода
+    width: "30px",
     height: "30px",
   },
 };

@@ -3,6 +3,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import User, Ad, Resume, ResumeDocument
 from .serializers import UserSerializer, RegisterSerializer, AdSerializer, ResumeSerializer
 from rest_framework import status
+from rest_framework import generics, filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -109,3 +111,10 @@ class UserResumesView(generics.ListAPIView):
 
     def get_queryset(self):
         return Resume.objects.filter(user=self.request.user).order_by("-created_at")
+
+
+class AdSearchView(generics.ListAPIView):
+    queryset = Ad.objects.all().order_by("-created_at")
+    serializer_class = AdSerializer
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    search_fields = ['title', 'description']  # Можно добавить еще 'category', 'subcategory'
