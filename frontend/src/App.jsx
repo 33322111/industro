@@ -38,7 +38,7 @@ function App() {
     <Router>
       <Layout isAuthenticated={isAuthenticated} handleLogout={handleLogout}>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home isAuthenticated={isAuthenticated} />} />
           <Route
             path="/login"
             element={!isAuthenticated ? (
@@ -65,7 +65,7 @@ function App() {
           />
           <Route
             path="/profile"
-            element={<Profile />}
+            element={<Profile isAuthenticated={isAuthenticated}/>}
           />
           <Route path="*" element={<Navigate to="/" />} />
           <Route

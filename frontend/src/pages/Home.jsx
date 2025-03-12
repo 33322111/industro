@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../services/api";
 
-const Home = () => {
+const Home = ({ isAuthenticated }) => {
   const [ads, setAds] = useState([]);
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,6 +14,18 @@ const Home = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
+      if (!isAuthenticated) {
+        setAds([]);
+        setResumes([]);
+        setProfile({
+          is_client: false,
+          is_contractor: false,
+        });
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
       try {
         const profileResponse = await api.get("/profile/");
         const userProfile = profileResponse.data;
@@ -38,7 +50,7 @@ const Home = () => {
     };
 
     fetchUserData();
-  }, []);
+  }, [isAuthenticated]);
 
   const sectionTitle = profile.is_client
     ? "Ваши объявления"
@@ -102,53 +114,16 @@ const Home = () => {
 };
 
 const styles = {
-  container: {
-    maxWidth: "800px",
-    margin: "0 auto",
-    padding: "20px",
-  },
-  content: {
-    textAlign: "center",
-    marginBottom: "30px",
-  },
-  adsContainer: {
-    padding: "20px",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    backgroundColor: "#f9f9f9",
-  },
-  sectionTitle: {
-    fontSize: "20px",
-    fontWeight: "bold",
-    marginBottom: "10px",
-  },
-  loading: {
-    textAlign: "center",
-    color: "gray",
-  },
-  error: {
-    textAlign: "center",
-    color: "red",
-  },
-  noAds: {
-    textAlign: "center",
-    color: "gray",
-  },
-  adList: {
-    listStyle: "none",
-    padding: 0,
-  },
-  adItem: {
-    padding: "10px",
-    borderBottom: "1px solid #ddd",
-  },
-  adLink: {
-    textDecoration: "none",
-    color: "#007bff",
-    fontSize: "16px",
-    fontWeight: "bold",
-    display: "block",
-  },
+  container: { maxWidth: "800px", margin: "0 auto", padding: "20px" },
+  content: { textAlign: "center", marginBottom: "30px" },
+  adsContainer: { padding: "20px", border: "1px solid #ddd", borderRadius: "8px", backgroundColor: "#f9f9f9" },
+  sectionTitle: { fontSize: "20px", fontWeight: "bold", marginBottom: "10px" },
+  loading: { textAlign: "center", color: "gray" },
+  error: { textAlign: "center", color: "red" },
+  noAds: { textAlign: "center", color: "gray" },
+  adList: { listStyle: "none", padding: 0 },
+  adItem: { padding: "10px", borderBottom: "1px solid #ddd" },
+  adLink: { textDecoration: "none", color: "#007bff", fontSize: "16px", fontWeight: "bold", display: "block" },
 };
 
 export default Home;

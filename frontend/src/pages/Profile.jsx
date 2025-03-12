@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
-const Profile = () => {
+const Profile = ({ isAuthenticated }) => {
+  const navigate = useNavigate();
+
   const [profileData, setProfileData] = useState({
     avatar: null,
     username: "",
@@ -14,12 +17,17 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState("");
 
-  // Загружаем данные профиля при загрузке компонента
+  // Редирект при разлогине
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/"); // Перенаправляем на главную
+    }
+  }, [isAuthenticated, navigate]);
+
   useEffect(() => {
     fetchProfile();
   }, []);
 
-  // Загружаем данные после завершения редактирования
   useEffect(() => {
     if (!isEditing) {
       fetchProfile();
@@ -39,64 +47,54 @@ const Profile = () => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
   };
 
-  // Загружаем файл (аватар)
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setProfileData({ ...profileData, avatar: file }); // Сохраняем файл как `File`
+      setProfileData({ ...profileData, avatar: file });
     }
   };
 
-  // Сохраняем изменения профиля
- const handleSave = async () => {
-  try {
-    const formData = new FormData();
+  const handleSave = async () => {
+    try {
+      const formData = new FormData();
 
-    Object.entries(profileData).forEach(([key, value]) => {
-      if (key === "avatar" && value instanceof File) {
-        formData.append(key, value); // Отправляем файл
+      Object.entries(profileData).forEach(([key, value]) => {
+        if (key === "avatar" && value instanceof File) {
+          formData.append(key, value);
+        } else {
+          formData.append(key, value);
+        }
+      });
+
+      const response = await api.put("/profile/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setMessage("Профиль успешно обновлён!");
+      setIsEditing(false);
+      fetchProfile();
+    } catch (error) {
+      console.error("Ошибка обновления профиля:", error);
+
+      if (error.response) {
+        setMessage(`Ошибка: ${JSON.stringify(error.response.data)}`);
       } else {
-        formData.append(key, value);
+        setMessage("Ошибка: Сервер не отвечает.");
       }
-    });
-
-    console.log("Отправляемые данные:", Object.fromEntries(formData));
-
-    // Правильно сохраняем ответ в переменную response
-    const response = await api.put("/profile/", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-
-    console.log("Ответ сервера:", response.data);
-
-    setMessage("Профиль успешно обновлён!");
-    setIsEditing(false);
-    fetchProfile(); // Перезагружаем профиль
-  } catch (error) {
-    console.error("Ошибка обновления профиля:", error);
-
-    if (error.response) {
-      console.log("Детали ошибки сервера:", error.response);
-      setMessage(`Ошибка: ${JSON.stringify(error.response.data)}`);
-    } else {
-      console.log("Запрос не дошёл до сервера.");
-      setMessage("Ошибка: Сервер не отвечает.");
     }
-  }
-};
+  };
 
   return (
     <div style={styles.container}>
       <h1>Личный профиль</h1>
       <div style={styles.profileCard}>
-        {/* Аватар */}
         <div style={styles.avatarContainer}>
           <img
             src={profileData.avatar instanceof File
-                ? URL.createObjectURL(profileData.avatar)
-                : profileData.avatar || "https://via.placeholder.com/150"}
+              ? URL.createObjectURL(profileData.avatar)
+              : profileData.avatar || "https://via.placeholder.com/150"}
             alt="Avatar"
             style={styles.avatar}
           />
@@ -109,22 +107,11 @@ const Profile = () => {
             />
           )}
         </div>
-        {/* Информация */}
+
         <div style={styles.infoContainer}>
-          <div>
-            <strong>Никнейм:</strong>{profileData.username}
-          </div>
-          <div>
-            <strong>Почта:</strong> {profileData.email}
-          </div>
-          <div>
-            <strong>Роль:</strong> {" "}
-            {profileData.is_client ? (
-              "Заказчик"
-            ) : (
-              "Исполнитель"
-            )}
-          </div>
+          <div><strong>Никнейм:</strong> {profileData.username}</div>
+          <div><strong>Почта:</strong> {profileData.email}</div>
+          <div><strong>Роль:</strong> {profileData.is_client ? "Заказчик" : "Исполнитель"}</div>
           <div>
             <strong>Информация о компании:</strong>{" "}
             {isEditing ? (
@@ -154,12 +141,14 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
       <button
         onClick={isEditing ? handleSave : () => setIsEditing(true)}
         style={styles.button}
       >
         {isEditing ? "Сохранить изменения" : "Редактировать профиль"}
       </button>
+
       {message && <p style={styles.message}>{message}</p>}
     </div>
   );

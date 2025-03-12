@@ -27,6 +27,13 @@ const Header = ({ isAuthenticated, handleLogout }) => {
     }
   }, [isAuthenticated]);
 
+  // ОЧИСТКА ПРИ ПЕРЕХОДЕ НА ГЛАВНУЮ СТРАНИЦУ
+  useEffect(() => {
+    if (location.pathname === "/") {
+      setSearchQuery("");
+    }
+  }, [location.pathname]);
+
   const fetchProfile = async () => {
     try {
       const response = await api.get("/profile/");
@@ -37,9 +44,7 @@ const Header = ({ isAuthenticated, handleLogout }) => {
   };
 
   const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      return;
-    }
+    if (!searchQuery.trim()) return;
 
     try {
       const response = await api.get(`/ads/search/?search=${encodeURIComponent(searchQuery)}`);
@@ -47,6 +52,7 @@ const Header = ({ isAuthenticated, handleLogout }) => {
 
       console.log("Результаты поиска:", searchResults);
 
+      // Передаём результаты на страницу с поиском
       navigate("/search-results", { state: { results: searchResults } });
     } catch (error) {
       console.error("Ошибка при поиске:", error);
@@ -55,7 +61,6 @@ const Header = ({ isAuthenticated, handleLogout }) => {
 
   const handleFilters = () => {
     console.log("Открыть фильтры");
-    // TODO: добавить модалку с фильтрами или переход на страницу фильтрации
   };
 
   const searchPlaceholder = profileData.is_client
