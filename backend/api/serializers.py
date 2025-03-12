@@ -47,6 +47,7 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
 
 class AdSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(read_only=True)  # Показываем имя пользователя вместо ID
+    author_id = serializers.IntegerField(source="author.id", read_only=True)
 
     class Meta:
         model = Ad

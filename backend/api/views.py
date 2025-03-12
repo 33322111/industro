@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import User, Ad, Resume, ResumeDocument
-from .serializers import UserSerializer, RegisterSerializer, AdSerializer, ResumeSerializer
+from .serializers import UserSerializer, RegisterSerializer, AdSerializer, ResumeSerializer, ProfileSerializer
 from rest_framework import status
 from rest_framework import generics, filters
 from django_filters.rest_framework import DjangoFilterBackend

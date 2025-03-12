@@ -20,6 +20,7 @@ urlpatterns = [
 
     # Профиль
     path("profile/", ProfileDetailView.as_view(), name="profile"),
+    path('profile/<int:pk>/', UserDetailView.as_view(), name='user-detail'),
 
     # Объявления
     path('ads/', AdListCreateView.as_view(), name='ad-list-create'),

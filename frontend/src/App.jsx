@@ -11,6 +11,7 @@ import AdDetailPage from "./pages/AdDetailPage.jsx";
 import CreateResume from "./pages/CreateResume.jsx";
 import ResumeDetailPage from "./pages/ResumeDetailPage.jsx";
 import SearchResultsPage from "./pages/SearchResultsPage.jsx";
+import UserProfilePage from "./pages/UserProfilePage.jsx";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -82,6 +83,7 @@ function App() {
           <Route path="/ads/:id/" element={<AdDetailPage />} />
           <Route path="/resumes/:id/" element={<ResumeDetailPage />} />
           <Route path="/search-results" element={<SearchResultsPage />} />
+          <Route path="/profile/:id" element={<UserProfilePage />} />
         </Routes>
       </Layout>
     </Router>
