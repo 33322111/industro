@@ -82,7 +82,7 @@ const Home = ({ isAuthenticated }) => {
                 <li key={ad.id} style={styles.adItem}>
                   <Link to={`/ads/${ad.id}/`} style={styles.adLink}>
                     <h4>{ad.title}</h4>
-                    <p>{ad.category} / {ad.subcategory}</p>
+                    <p>{ad.category_name} / {ad.subcategory_name}</p>
                   </Link>
                 </li>
               ))}

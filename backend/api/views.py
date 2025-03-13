@@ -1,7 +1,8 @@
 from rest_framework import generics, permissions, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import User, Ad, Resume, ResumeDocument
-from .serializers import UserSerializer, RegisterSerializer, AdSerializer, ResumeSerializer, ProfileSerializer
+from .models import User, Ad, Resume, ResumeDocument, Category
+from .serializers import UserSerializer, RegisterSerializer, AdSerializer, ResumeSerializer, ProfileSerializer, \
+    CategorySerializer
 from rest_framework import status
 from rest_framework import generics, filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -118,3 +119,8 @@ class AdSearchView(generics.ListAPIView):
     serializer_class = AdSerializer
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     search_fields = ['title', 'description']  # Можно добавить еще 'category', 'subcategory'
+
+
+class CategoryListView(generics.ListAPIView):
+    queryset = Category.objects.prefetch_related('subcategories').all()
+    serializer_class = CategorySerializer

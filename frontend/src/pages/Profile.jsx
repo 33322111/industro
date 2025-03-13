@@ -9,7 +9,7 @@ const Profile = ({ isAuthenticated }) => {
     avatar: null,
     username: "",
     email: "",
-    role: "",
+    is_client: false,
     company_info: "",
     address: "",
   });
@@ -17,22 +17,15 @@ const Profile = ({ isAuthenticated }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState("");
 
-  // Редирект при разлогине
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate("/"); // Перенаправляем на главную
+      navigate("/");
     }
   }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     fetchProfile();
   }, []);
-
-  useEffect(() => {
-    if (!isEditing) {
-      fetchProfile();
-    }
-  }, [isEditing]);
 
   const fetchProfile = async () => {
     try {
@@ -66,7 +59,7 @@ const Profile = ({ isAuthenticated }) => {
         }
       });
 
-      const response = await api.put("/profile/", formData, {
+      await api.put("/profile/", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -89,74 +82,102 @@ const Profile = ({ isAuthenticated }) => {
   return (
     <div style={styles.container}>
       <h1>Личный профиль</h1>
-      <div style={styles.profileCard}>
-        <div style={styles.avatarContainer}>
+
+      <form style={styles.form} onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
+
+        <div style={styles.avatarWrapper}>
           <img
-            src={profileData.avatar instanceof File
-              ? URL.createObjectURL(profileData.avatar)
-              : profileData.avatar || "https://via.placeholder.com/150"}
+            src={
+              profileData.avatar instanceof File
+                ? URL.createObjectURL(profileData.avatar)
+                : profileData.avatar || "https://via.placeholder.com/150"
+            }
             alt="Avatar"
             style={styles.avatar}
           />
           {isEditing && (
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarChange}
-              style={styles.fileInput}
-            />
+            <input type="file" accept="image/*" onChange={handleAvatarChange} />
           )}
         </div>
 
-        <div style={styles.infoContainer}>
-          <div><strong>Никнейм:</strong> {profileData.username}</div>
-          <div><strong>Почта:</strong> {profileData.email}</div>
-          <div><strong>Роль:</strong> {profileData.is_client ? "Заказчик" : "Исполнитель"}</div>
-          <div>
-            <strong>Информация о компании:</strong>{" "}
-            {isEditing ? (
-              <textarea
-                name="company_info"
-                value={profileData.company_info}
-                onChange={handleInputChange}
-                style={styles.textarea}
-              />
-            ) : (
-              profileData.company_info
-            )}
-          </div>
-          <div>
-            <strong>Адрес:</strong>{" "}
-            {isEditing ? (
-              <input
-                type="text"
-                name="address"
-                value={profileData.address}
-                onChange={handleInputChange}
-                style={styles.input}
-              />
-            ) : (
-              profileData.address
-            )}
-          </div>
-        </div>
-      </div>
+        <label style={styles.label}>
+          Никнейм:
+          <input
+            type="text"
+            name="username"
+            value={profileData.username}
+            disabled
+            style={{ ...styles.input, backgroundColor: "#f0f0f0", cursor: "not-allowed" }}
+          />
+        </label>
 
-      <button
-        onClick={isEditing ? handleSave : () => setIsEditing(true)}
-        style={styles.button}
-      >
-        {isEditing ? "Сохранить изменения" : "Редактировать профиль"}
-      </button>
+        <label style={styles.label}>
+          Email:
+          <input
+            type="email"
+            name="email"
+            value={profileData.email}
+            disabled
+            style={{ ...styles.input, backgroundColor: "#f0f0f0", cursor: "not-allowed" }}
+          />
+        </label>
 
-      {message && <p style={styles.message}>{message}</p>}
+        <label style={styles.label}>
+          Роль:
+          <input
+            type="text"
+            value={profileData.is_client ? "Заказчик" : "Исполнитель"}
+            disabled
+            style={{ ...styles.input, backgroundColor: "#f0f0f0", cursor: "not-allowed" }}
+          />
+        </label>
+
+        <label style={styles.label}>
+          Информация о компании:
+          <textarea
+            name="company_info"
+            value={profileData.company_info}
+            onChange={handleInputChange}
+            disabled={!isEditing}
+            style={{
+              ...styles.input,
+              height: "100px",
+              resize: "vertical",
+              backgroundColor: !isEditing ? "#f0f0f0" : "white",
+              cursor: !isEditing ? "not-allowed" : "text",
+            }}
+          />
+        </label>
+
+        <label style={styles.label}>
+          Адрес:
+          <input
+            type="text"
+            name="address"
+            value={profileData.address}
+            onChange={handleInputChange}
+            disabled={!isEditing}
+            style={{
+              ...styles.input,
+              backgroundColor: !isEditing ? "#f0f0f0" : "white",
+              cursor: !isEditing ? "not-allowed" : "text",
+            }}
+          />
+        </label>
+
+        {message && <p style={styles.message}>{message}</p>}
+
+        <button type="button" onClick={() => (isEditing ? handleSave() : setIsEditing(true))} style={styles.button}>
+          {isEditing ? "Сохранить изменения" : "Редактировать профиль"}
+        </button>
+      </form>
     </div>
   );
 };
 
 const styles = {
   container: {
-    maxWidth: "600px",
+    maxWidth: "400px",
     margin: "50px auto",
     padding: "20px",
     border: "1px solid #ccc",
@@ -164,14 +185,11 @@ const styles = {
     backgroundColor: "#f9f9f9",
     textAlign: "center",
   },
-  profileCard: {
+  avatarWrapper: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: "15px",
-  },
-  avatarContainer: {
-    position: "relative",
+    gap: "10px",
   },
   avatar: {
     width: "150px",
@@ -180,33 +198,26 @@ const styles = {
     objectFit: "cover",
     border: "2px solid #ccc",
   },
-  fileInput: {
-    marginTop: "10px",
-  },
-  infoContainer: {
-    textAlign: "left",
-    width: "100%",
+  form: {
     display: "flex",
     flexDirection: "column",
-    gap: "10px",
+    gap: "15px",
+    marginTop: "20px",
+  },
+  label: {
+    display: "flex",
+    flexDirection: "column",
+    textAlign: "left",
+    fontWeight: "bold",
   },
   input: {
-    width: "100%",
     padding: "10px",
     fontSize: "16px",
-    border: "1px solid #ccc",
     borderRadius: "5px",
-  },
-  textarea: {
-    width: "100%",
-    padding: "10px",
-    fontSize: "16px",
     border: "1px solid #ccc",
-    borderRadius: "5px",
-    minHeight: "60px",
+    marginTop: "5px",
   },
   button: {
-    marginTop: "20px",
     padding: "10px 20px",
     fontSize: "16px",
     backgroundColor: "#1a73e8",
@@ -214,11 +225,12 @@ const styles = {
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
+    marginTop: "10px",
   },
   message: {
-    marginTop: "20px",
     color: "green",
     fontWeight: "bold",
+    marginTop: "10px",
   },
 };
 

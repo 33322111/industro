@@ -82,6 +82,7 @@ const categories = {
 
 const CreateResumePage = () => {
   const navigate = useNavigate();
+
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [title, setTitle] = useState("");
@@ -98,14 +99,12 @@ const CreateResumePage = () => {
   const handleCategoryChange = (event) => {
     const category = event.target.value;
     setSelectedCategory(category);
-    setSelectedSubcategory(categories[category] ? categories[category][0] : "Другое");
+    setSelectedSubcategory("");
   };
 
-  const handleSubcategoryChange = (event) => {
-    setSelectedSubcategory(event.target.value);
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const handleSubmit = async () => {
     if (!selectedCategory || !selectedSubcategory || !title || !description) {
       setError("Пожалуйста, заполните все обязательные поля.");
       return;
@@ -139,8 +138,11 @@ const CreateResumePage = () => {
     formData.append("fixed_price", fixedPrice);
     formData.append("location", location);
     formData.append("city", city);
-    for (let i = 0; i < documents.length; i++) {
-      formData.append("documents", documents[i]);
+
+    if (documents) {
+      for (let i = 0; i < documents.length; i++) {
+        formData.append("documents", documents[i]);
+      }
     }
 
     try {
@@ -149,162 +151,218 @@ const CreateResumePage = () => {
           "Content-Type": "multipart/form-data",
         },
       });
+
       if (response.status === 201) {
         alert("Резюме успешно создано!");
         navigate("/");
       }
     } catch (error) {
+      console.error("Ошибка при создании резюме:", error);
       setError("Ошибка при создании резюме. Пожалуйста, попробуйте снова.");
-      console.error("Ошибка:", error);
     }
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto bg-white shadow-lg rounded-xl">
-      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Создание резюме</h2>
-      <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium mb-2 text-gray-700">Категория</label>
+    <div style={styles.container}>
+      <h1>Создать резюме</h1>
+
+      <form onSubmit={handleSubmit} style={styles.form}>
+        <label style={styles.label}>
+          Категория:
           <select
             value={selectedCategory}
             onChange={handleCategoryChange}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            required
+            style={styles.input}
           >
             <option value="">Выберите категорию</option>
             {Object.keys(categories).map((category) => (
-              <option key={category} value={category}>{category}</option>
+              <option key={category} value={category}>
+                {category}
+              </option>
             ))}
           </select>
-        </div>
+        </label>
 
         {selectedCategory && (
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700">Подкатегория</label>
+          <label style={styles.label}>
+            Подкатегория:
             <select
               value={selectedSubcategory}
-              onChange={handleSubcategoryChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              onChange={(e) => setSelectedSubcategory(e.target.value)}
+              required
+              style={styles.input}
             >
+              <option value="">Выберите подкатегорию</option>
               {categories[selectedCategory].map((subcategory) => (
-                <option key={subcategory} value={subcategory}>{subcategory}</option>
+                <option key={subcategory} value={subcategory}>
+                  {subcategory}
+                </option>
               ))}
             </select>
-          </div>
+          </label>
         )}
 
-        <div>
-          <label className="block text-sm font-medium mb-2 text-gray-700">Название</label>
+        <label style={styles.label}>
+          Название:
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            required
+            style={styles.input}
           />
-        </div>
+        </label>
 
-        <div>
-          <label className="block text-sm font-medium mb-2 text-gray-700">Описание</label>
+        <label style={styles.label}>
+          Описание:
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            rows="4"
-          ></textarea>
-        </div>
+            required
+            style={{ ...styles.input, height: "100px" }}
+          />
+        </label>
 
-        <div>
-          <label className="block text-sm font-medium mb-2 text-gray-700">Цена</label>
+        <label style={styles.label}>
+          Тип цены:
           <select
             value={priceType}
             onChange={(e) => setPriceType(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            style={styles.input}
           >
             <option value="fixed">Фиксированная цена</option>
             <option value="range">Диапазон</option>
             <option value="negotiable">Договорная</option>
           </select>
-        </div>
+        </label>
 
         {priceType === "fixed" && (
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700">Фиксированная цена (₽)</label>
+          <label style={styles.label}>
+            Фиксированная цена (₽):
             <input
               type="number"
               value={fixedPrice}
               onChange={(e) => setFixedPrice(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              required
+              style={styles.input}
             />
-          </div>
+          </label>
         )}
 
         {priceType === "range" && (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">Цена от (₽)</label>
+          <>
+            <label style={styles.label}>
+              Цена от (₽):
               <input
                 type="number"
                 value={priceFrom}
                 onChange={(e) => setPriceFrom(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                required
+                style={styles.input}
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">Цена до (₽)</label>
+            </label>
+
+            <label style={styles.label}>
+              Цена до (₽):
               <input
                 type="number"
                 value={priceTo}
                 onChange={(e) => setPriceTo(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                required
+                style={styles.input}
               />
-            </div>
-          </div>
+            </label>
+          </>
         )}
 
-        <div>
-          <label className="block text-sm font-medium mb-2 text-gray-700">Локация</label>
+        <label style={styles.label}>
+          Локация:
           <select
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            style={styles.input}
           >
             <option value="on_site">Выезд</option>
             <option value="remote">Удаленно</option>
           </select>
-        </div>
+        </label>
 
         {location === "on_site" && (
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700">Города (через запятую)</label>
+          <label style={styles.label}>
+            Город:
             <input
               type="text"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              required
+              style={styles.input}
             />
-          </div>
+          </label>
         )}
 
-        <div>
-          <label className="block text-sm font-medium mb-2 text-gray-700">Примеры работ</label>
+        <label style={styles.label}>
+          Примеры работ:
           <input
             type="file"
             multiple
             onChange={(e) => setDocuments(e.target.files)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            style={styles.input}
           />
-        </div>
+        </label>
 
-        {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
+        {error && <p style={styles.error}>{error}</p>}
 
-        <button
-          onClick={handleSubmit}
-          className="w-full bg-blue-500 text-white px-4 py-3 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all"
-        >
+        <button type="submit" style={styles.button}>
           Создать резюме
         </button>
-      </div>
+      </form>
     </div>
   );
+};
+
+const styles = {
+  container: {
+    maxWidth: "500px",
+    margin: "50px auto",
+    padding: "20px",
+    border: "1px solid #ccc",
+    borderRadius: "10px",
+    backgroundColor: "#f9f9f9",
+    textAlign: "center",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "15px",
+  },
+  label: {
+    display: "flex",
+    flexDirection: "column",
+    textAlign: "left",
+  },
+  input: {
+    padding: "10px",
+    fontSize: "16px",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+    marginTop: "5px",
+  },
+  button: {
+    padding: "10px 20px",
+    fontSize: "16px",
+    backgroundColor: "#1a73e8",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    marginTop: "10px",
+  },
+  error: {
+    color: "red",
+    fontWeight: "bold",
+    marginTop: "10px",
+  },
 };
 
 export default CreateResumePage;

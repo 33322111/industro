@@ -41,7 +41,7 @@ const SearchResultsPage = () => {
               <li key={ad.id} style={styles.listItem}>
                 <Link to={`/ads/${ad.id}/`} style={styles.link}>
                   <h4>{ad.title}</h4>
-                  <p>{ad.category} / {ad.subcategory}</p>
+                  <p>{ad.category_name} / {ad.subcategory_name}</p>
                 </Link>
               </li>
             ))}

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Ad, Resume, ResumeDocument
+from .models import User, Ad, Resume, ResumeDocument, Subcategory, Category
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -46,8 +46,12 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
 
 
 class AdSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField(read_only=True)  # Показываем имя пользователя вместо ID
+    author = serializers.StringRelatedField(read_only=True)
     author_id = serializers.IntegerField(source="author.id", read_only=True)
+
+    # Названия категорий
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    subcategory_name = serializers.CharField(source='subcategory.name', read_only=True)
 
     class Meta:
         model = Ad
@@ -93,3 +97,17 @@ class ResumeSerializer(serializers.ModelSerializer):
             'created_at'
         ]
         read_only_fields = ['user', 'created_at']
+
+
+class SubcategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subcategory
+        fields = ('id', 'name')
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    subcategories = SubcategorySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Category
+        fields = ('id', 'name', 'subcategories')

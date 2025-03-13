@@ -1,87 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
-const categories = {
-  "Проектирование и инжиниринг": [
-    "Архитектурное проектирование промышленных объектов",
-    "Технологическое проектирование (линии, цеха, заводы)",
-    "Проектирование инженерных сетей (электроснабжение, водоснабжение, вентиляция)",
-    "Автоматизация и цифровизация производства (IIoT, SCADA, MES)",
-    "Экологическое проектирование (очистные сооружения, отходы)",
-    "Другое",
-  ],
-  "Монтаж и пусконаладочные работы": [
-    "Электромонтажные работы",
-    "Монтаж и наладка технологического оборудования",
-    "Монтаж трубопроводов и инженерных коммуникаций",
-    "Пусконаладка КИПиА (контрольно-измерительные приборы и автоматика)",
-    "Балансировка и наладка вентиляции и кондиционирования",
-    "Другое",
-  ],
-  "Производство и поставка оборудования": [
-    "Промышленные насосы и компрессоры",
-    "Котельное и теплоэнергетическое оборудование",
-    "Системы очистки воды и газов",
-    "Робототехника и автоматизированные комплексы",
-    "Электротехническое оборудование (распределительные щиты, трансформаторы)",
-    "Другое",
-  ],
-  "Обслуживание и ремонт": [
-    "Техническое обслуживание производственных линий",
-    "Диагностика и ремонт промышленного оборудования",
-    "Обслуживание инженерных систем (отопление, вентиляция, кондиционирование)",
-    "Аутсорсинг сервисных работ (инженеры, наладчики)",
-    "Другое",
-  ],
-  "Строительство промышленных объектов": [
-    "Генеральный подряд (строительство \"под ключ\")",
-    "Металлоконструкции и каркасные здания",
-    "Фундаментные работы и геодезия",
-    "Промышленное остекление и фасады",
-    "Промышленные покрытия и антикоррозийная защита",
-    "Другое",
-  ],
-  "Логистика и складские услуги": [
-    "Транспортировка промышленного оборудования",
-    "Логистика опасных грузов",
-    "Аренда и продажа складских помещений",
-    "Контейнерные перевозки и спецтранспорт",
-    "Другое",
-  ],
-  "Энергетика и альтернативные источники": [
-    "Системы энергосбережения и энергоэффективности",
-    "Внедрение возобновляемых источников энергии (солнечные панели, биогаз)",
-    "Автономные энергосистемы (дизель-генераторы, UPS)",
-    "Другое",
-  ],
-  "Экологические услуги и охрана труда": [
-    "Экологический аудит и сертификация",
-    "Обращение с промышленными отходами",
-    "Фундаментные работы и геодезия",
-    "Промышленная безопасность и охрана труда",
-    "Пожарная безопасность и противопожарные системыа",
-    "Другое",
-  ],
-  "IT и программное обеспечение для промышленности": [
-    "Разработка специализированного ПО для заводов и производств",
-    "SCADA, MES, ERP-системы",
-    "Инженерное ПО (AutoCAD, SolidWorks, 3D моделирование)",
-    "Промышленный интернет вещей (IIoT)",
-    "Другое",
-  ],
-  "Кадровые услуги и обучение": [
-    "Поиск и подбор инженеров, проектировщиков, монтажников",
-    "Аутсорсинг производственного персонала",
-    "Курсы и тренинги по промышленному инжинирингу",
-    "Аттестация персонала (сварщики, электрики, операторы)",
-    "Другое",
-  ],
-  "Другое": ["Другое"],
-};
-
 const CreateAdPage = () => {
   const navigate = useNavigate();
+
+  const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [title, setTitle] = useState("");
@@ -97,17 +21,24 @@ const CreateAdPage = () => {
   const [documents, setDocuments] = useState(null);
   const [error, setError] = useState("");
 
-  const handleCategoryChange = (event) => {
-    const category = event.target.value;
-    setSelectedCategory(category);
-    setSelectedSubcategory(categories[category] ? categories[category][0] : "Другое");
-  };
+  // Получаем категории при загрузке страницы
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get("/categories/");
+        setCategories(response.data);
+      } catch (error) {
+        console.error("Ошибка загрузки категорий:", error);
+      }
+    };
 
-  const handleSubcategoryChange = (event) => {
-    setSelectedSubcategory(event.target.value);
-  };
+    fetchCategories();
+  }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Валидации формы
     if (!selectedCategory || !selectedSubcategory || !title || !description) {
       setError("Пожалуйста, заполните все обязательные поля.");
       return;
@@ -138,7 +69,7 @@ const CreateAdPage = () => {
       return;
     }
 
-    setError("");
+    setError(""); // Очистка ошибок
 
     const formData = new FormData();
     formData.append("category", selectedCategory);
@@ -153,6 +84,7 @@ const CreateAdPage = () => {
     formData.append("project_deadline", projectDeadline);
     formData.append("location", location);
     formData.append("city", city);
+
     for (let i = 0; i < documents.length; i++) {
       formData.append("documents", documents[i]);
     }
@@ -163,6 +95,7 @@ const CreateAdPage = () => {
           "Content-Type": "multipart/form-data",
         },
       });
+
       if (response.status === 201) {
         alert("Объявление успешно создано!");
         navigate("/");
@@ -174,176 +107,238 @@ const CreateAdPage = () => {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto bg-white shadow-lg rounded-xl">
-      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Создание объявления</h2>
-      <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium mb-2 text-gray-700">Категория</label>
+    <div style={styles.container}>
+      <h1>Создать объявление</h1>
+
+      <form onSubmit={handleSubmit} style={styles.form}>
+
+        <label style={styles.label}>
+          Категория:
           <select
             value={selectedCategory}
-            onChange={handleCategoryChange}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            onChange={(e) => {
+              setSelectedCategory(e.target.value);
+              setSelectedSubcategory("");
+            }}
+            style={styles.input}
+            required
           >
             <option value="">Выберите категорию</option>
-            {Object.keys(categories).map((category) => (
-              <option key={category} value={category}>{category}</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
             ))}
           </select>
-        </div>
+        </label>
 
         {selectedCategory && (
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700">Подкатегория</label>
+          <label style={styles.label}>
+            Подкатегория:
             <select
               value={selectedSubcategory}
-              onChange={handleSubcategoryChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              onChange={(e) => setSelectedSubcategory(e.target.value)}
+              style={styles.input}
+              required
             >
-              {categories[selectedCategory].map((subcategory) => (
-                <option key={subcategory} value={subcategory}>{subcategory}</option>
-              ))}
+              <option value="">Выберите подкатегорию</option>
+              {categories
+                .find((category) => category.id.toString() === selectedCategory)
+                ?.subcategories.map((subcategory) => (
+                  <option key={subcategory.id} value={subcategory.id}>
+                    {subcategory.name}
+                  </option>
+                ))}
             </select>
-          </div>
+          </label>
         )}
 
-        <div>
-          <label className="block text-sm font-medium mb-2 text-gray-700">Название</label>
+        <label style={styles.label}>
+          Название:
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            style={styles.input}
+            required
           />
-        </div>
+        </label>
 
-        <div>
-          <label className="block text-sm font-medium mb-2 text-gray-700">Описание</label>
+        <label style={styles.label}>
+          Описание:
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            rows="4"
-          ></textarea>
-        </div>
+            style={{ ...styles.input, height: "100px" }}
+            required
+          />
+        </label>
 
-        <div>
-          <label className="block text-sm font-medium mb-2 text-gray-700">Цена</label>
+        <label style={styles.label}>
+          Тип цены:
           <select
             value={priceType}
             onChange={(e) => setPriceType(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            style={styles.input}
           >
             <option value="fixed">Фиксированная цена</option>
             <option value="range">Диапазон</option>
             <option value="negotiable">Договорная</option>
           </select>
-        </div>
+        </label>
 
         {priceType === "fixed" && (
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700">Фиксированная цена (₽)</label>
+          <label style={styles.label}>
+            Фиксированная цена (₽):
             <input
               type="number"
               value={fixedPrice}
               onChange={(e) => setFixedPrice(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              style={styles.input}
+              required
             />
-          </div>
+          </label>
         )}
 
         {priceType === "range" && (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">Цена от (₽)</label>
+          <>
+            <label style={styles.label}>
+              Цена от (₽):
               <input
                 type="number"
                 value={priceFrom}
                 onChange={(e) => setPriceFrom(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                style={styles.input}
+                required
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">Цена до (₽)</label>
+            </label>
+
+            <label style={styles.label}>
+              Цена до (₽):
               <input
                 type="number"
                 value={priceTo}
                 onChange={(e) => setPriceTo(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                style={styles.input}
+                required
               />
-            </div>
-          </div>
+            </label>
+          </>
         )}
 
-        <div>
-          <label className="block text-sm font-medium mb-2 text-gray-700">Срок выполнения</label>
+        <label style={styles.label}>
+          Срок выполнения:
           <select
             value={executionTime}
             onChange={(e) => setExecutionTime(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            style={styles.input}
           >
             <option value="one_time">Разовое задание</option>
             <option value="long_term">Долгосрочное сотрудничество</option>
             <option value="urgent">Срочный проект</option>
           </select>
-        </div>
+        </label>
 
         {executionTime === "urgent" && (
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700">Сроки проекта (до N дней)</label>
+          <label style={styles.label}>
+            Сроки проекта (дней):
             <input
               type="number"
               value={projectDeadline}
               onChange={(e) => setProjectDeadline(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              style={styles.input}
+              required
             />
-          </div>
+          </label>
         )}
 
-        <div>
-          <label className="block text-sm font-medium mb-2 text-gray-700">Локация</label>
+        <label style={styles.label}>
+          Локация:
           <select
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            style={styles.input}
           >
             <option value="on_site">На месте</option>
             <option value="remote">Удаленно</option>
           </select>
-        </div>
+        </label>
 
         {location === "on_site" && (
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700">Город</label>
+          <label style={styles.label}>
+            Город:
             <input
               type="text"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              style={styles.input}
+              required
             />
-          </div>
+          </label>
         )}
 
-        <div>
-          <label className="block text-sm font-medium mb-2 text-gray-700">Документы</label>
+        <label style={styles.label}>
+          Документы:
           <input
             type="file"
             multiple
             onChange={(e) => setDocuments(e.target.files)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            style={styles.input}
           />
-        </div>
+        </label>
 
-        {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-
-        <button
-          onClick={handleSubmit}
-          className="w-full bg-blue-500 text-white px-4 py-3 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all"
-        >
+        <button type="submit" style={styles.button}>
           Создать объявление
         </button>
-      </div>
+      </form>
+
+      {error && <p style={styles.error}>{error}</p>}
     </div>
   );
+};
+
+const styles = {
+  container: {
+    maxWidth: "500px",
+    margin: "50px auto",
+    padding: "20px",
+    border: "1px solid #ccc",
+    borderRadius: "10px",
+    backgroundColor: "#f9f9f9",
+    textAlign: "center",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "15px",
+  },
+  label: {
+    display: "flex",
+    flexDirection: "column",
+    textAlign: "left",
+  },
+  input: {
+    padding: "10px",
+    fontSize: "16px",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+    marginTop: "5px",
+  },
+  button: {
+    padding: "10px 20px",
+    fontSize: "16px",
+    backgroundColor: "#1a73e8",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    marginTop: "10px",
+  },
+  error: {
+    color: "red",
+    fontWeight: "bold",
+    marginTop: "10px",
+  },
 };
 
 export default CreateAdPage;

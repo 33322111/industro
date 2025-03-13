@@ -34,7 +34,7 @@ const AdDetailPage = () => {
       <p className="text-gray-700">{ad.description}</p>
 
       <div className="mt-4 space-y-2">
-        <p><strong>Категория:</strong> {ad.category} / {ad.subcategory}</p>
+        <p><strong>Категория:</strong> {ad.category_name} / {ad.subcategory_name}</p>
         <p><strong>Цена:</strong> {ad.price_type === "range" ? `${ad.price_from} - ${ad.price_to} ₽` : ad.price_type === "fixed" ? `${ad.fixed_price} ₽` : "Договорная"}</p>
         <p><strong>Город:</strong> {ad.city || "Не указан"}</p>
 
