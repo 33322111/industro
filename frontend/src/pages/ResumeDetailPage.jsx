@@ -35,7 +35,7 @@ const ResumeDetailPage = () => {
 
       <div className="space-y-2">
         <p>
-          <strong>Категория:</strong> {resume.category} / {resume.subcategory}
+          <strong>Категория:</strong> {resume.category_name} / {resume.subcategory_name}
         </p>
         <p>
           <strong>Цена:</strong>{" "}

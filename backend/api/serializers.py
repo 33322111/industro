@@ -78,6 +78,9 @@ class ResumeDocumentSerializer(serializers.ModelSerializer):
 class ResumeSerializer(serializers.ModelSerializer):
     documents = ResumeDocumentSerializer(many=True, read_only=True)
 
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    subcategory_name = serializers.CharField(source='subcategory.name', read_only=True)
+
     class Meta:
         model = Resume
         fields = [
@@ -94,7 +97,9 @@ class ResumeSerializer(serializers.ModelSerializer):
             'location',
             'city',
             'documents',
-            'created_at'
+            'created_at',
+            'category_name',
+            'subcategory_name'
         ]
         read_only_fields = ['user', 'created_at']
 

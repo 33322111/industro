@@ -12,6 +12,15 @@ const Home = ({ isAuthenticated }) => {
     is_contractor: false,
   });
 
+  // Пагинация для объявлений
+  const [adsPage, setAdsPage] = useState(1);
+  const adsPerPage = 5;
+
+  // Пагинация для резюме
+  const [resumesPage, setResumesPage] = useState(1);
+  const resumesPerPage = 5;
+
+  // Загрузка профиля и данных при входе
   useEffect(() => {
     const fetchUserData = async () => {
       if (!isAuthenticated) {
@@ -52,6 +61,16 @@ const Home = ({ isAuthenticated }) => {
     fetchUserData();
   }, [isAuthenticated]);
 
+  // Вычисляем страницы для объявлений
+  const totalAdsPages = Math.ceil(ads.length / adsPerPage);
+  const adsStartIndex = (adsPage - 1) * adsPerPage;
+  const currentAds = ads.slice(adsStartIndex, adsStartIndex + adsPerPage);
+
+  // Вычисляем страницы для резюме
+  const totalResumesPages = Math.ceil(resumes.length / resumesPerPage);
+  const resumesStartIndex = (resumesPage - 1) * resumesPerPage;
+  const currentResumes = resumes.slice(resumesStartIndex, resumesStartIndex + resumesPerPage);
+
   const sectionTitle = profile.is_client
     ? "Ваши объявления"
     : profile.is_contractor
@@ -78,7 +97,7 @@ const Home = ({ isAuthenticated }) => {
               <p style={styles.noAds}>У вас пока нет объявлений.</p>
             )}
             <ul style={styles.adList}>
-              {ads.map((ad) => (
+              {currentAds.map((ad) => (
                 <li key={ad.id} style={styles.adItem}>
                   <Link to={`/ads/${ad.id}/`} style={styles.adLink}>
                     <h4>{ad.title}</h4>
@@ -87,6 +106,40 @@ const Home = ({ isAuthenticated }) => {
                 </li>
               ))}
             </ul>
+
+            {/* Пагинация объявлений */}
+            {ads.length > adsPerPage && (
+              <div style={styles.paginationContainer}>
+                <button
+                  onClick={() => setAdsPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={adsPage === 1}
+                  style={styles.pageButton}
+                >
+                  Назад
+                </button>
+
+                {Array.from({ length: totalAdsPages }, (_, index) => (
+                  <button
+                    key={index + 1}
+                    onClick={() => setAdsPage(index + 1)}
+                    style={{
+                      ...styles.pageButton,
+                      ...(adsPage === index + 1 ? styles.activePageButton : {}),
+                    }}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => setAdsPage((prev) => Math.min(prev + 1, totalAdsPages))}
+                  disabled={adsPage === totalAdsPages}
+                  style={styles.pageButton}
+                >
+                  Вперед
+                </button>
+              </div>
+            )}
           </>
         )}
 
@@ -97,15 +150,49 @@ const Home = ({ isAuthenticated }) => {
               <p style={styles.noAds}>У вас пока нет резюме.</p>
             )}
             <ul style={styles.adList}>
-              {resumes.map((resume) => (
+              {currentResumes.map((resume) => (
                 <li key={resume.id} style={styles.adItem}>
                   <Link to={`/resumes/${resume.id}/`} style={styles.adLink}>
                     <h4>{resume.title}</h4>
-                    <p>{resume.category} / {resume.subcategory}</p>
+                    <p>{resume.category_name} / {resume.subcategory_name}</p>
                   </Link>
                 </li>
               ))}
             </ul>
+
+            {/* Пагинация резюме */}
+            {resumes.length > resumesPerPage && (
+              <div style={styles.paginationContainer}>
+                <button
+                  onClick={() => setResumesPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={resumesPage === 1}
+                  style={styles.pageButton}
+                >
+                  Назад
+                </button>
+
+                {Array.from({ length: totalResumesPages }, (_, index) => (
+                  <button
+                    key={index + 1}
+                    onClick={() => setResumesPage(index + 1)}
+                    style={{
+                      ...styles.pageButton,
+                      ...(resumesPage === index + 1 ? styles.activePageButton : {}),
+                    }}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => setResumesPage((prev) => Math.min(prev + 1, totalResumesPages))}
+                  disabled={resumesPage === totalResumesPages}
+                  style={styles.pageButton}
+                >
+                  Вперед
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -124,6 +211,25 @@ const styles = {
   adList: { listStyle: "none", padding: 0 },
   adItem: { padding: "10px", borderBottom: "1px solid #ddd" },
   adLink: { textDecoration: "none", color: "#007bff", fontSize: "16px", fontWeight: "bold", display: "block" },
+  paginationContainer: {
+    marginTop: "20px",
+    display: "flex",
+    justifyContent: "center",
+    gap: "5px",
+    flexWrap: "wrap",
+  },
+  pageButton: {
+    padding: "8px 12px",
+    backgroundColor: "#f1f1f1",
+    border: "1px solid #ccc",
+    borderRadius: "4px",
+    cursor: "pointer",
+  },
+  activePageButton: {
+    backgroundColor: "#007bff",
+    color: "white",
+    fontWeight: "bold",
+  },
 };
 
 export default Home;

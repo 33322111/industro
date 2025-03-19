@@ -1,88 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
-
-const categories = {
-  "Проектирование и инжиниринг": [
-    "Архитектурное проектирование промышленных объектов",
-    "Технологическое проектирование (линии, цеха, заводы)",
-    "Проектирование инженерных сетей (электроснабжение, водоснабжение, вентиляция)",
-    "Автоматизация и цифровизация производства (IIoT, SCADA, MES)",
-    "Экологическое проектирование (очистные сооружения, отходы)",
-    "Другое",
-  ],
-  "Монтаж и пусконаладочные работы": [
-    "Электромонтажные работы",
-    "Монтаж и наладка технологического оборудования",
-    "Монтаж трубопроводов и инженерных коммуникаций",
-    "Пусконаладка КИПиА (контрольно-измерительные приборы и автоматика)",
-    "Балансировка и наладка вентиляции и кондиционирования",
-    "Другое",
-  ],
-  "Производство и поставка оборудования": [
-    "Промышленные насосы и компрессоры",
-    "Котельное и теплоэнергетическое оборудование",
-    "Системы очистки воды и газов",
-    "Робототехника и автоматизированные комплексы",
-    "Электротехническое оборудование (распределительные щиты, трансформаторы)",
-    "Другое",
-  ],
-  "Обслуживание и ремонт": [
-    "Техническое обслуживание производственных линий",
-    "Диагностика и ремонт промышленного оборудования",
-    "Обслуживание инженерных систем (отопление, вентиляция, кондиционирование)",
-    "Аутсорсинг сервисных работ (инженеры, наладчики)",
-    "Другое",
-  ],
-  "Строительство промышленных объектов": [
-    "Генеральный подряд (строительство \"под ключ\")",
-    "Металлоконструкции и каркасные здания",
-    "Фундаментные работы и геодезия",
-    "Промышленное остекление и фасады",
-    "Промышленные покрытия и антикоррозийная защита",
-    "Другое",
-  ],
-  "Логистика и складские услуги": [
-    "Транспортировка промышленного оборудования",
-    "Логистика опасных грузов",
-    "Аренда и продажа складских помещений",
-    "Контейнерные перевозки и спецтранспорт",
-    "Другое",
-  ],
-  "Энергетика и альтернативные источники": [
-    "Системы энергосбережения и энергоэффективности",
-    "Внедрение возобновляемых источников энергии (солнечные панели, биогаз)",
-    "Автономные энергосистемы (дизель-генераторы, UPS)",
-    "Другое",
-  ],
-  "Экологические услуги и охрана труда": [
-    "Экологический аудит и сертификация",
-    "Обращение с промышленными отходами",
-    "Фундаментные работы и геодезия",
-    "Промышленная безопасность и охрана труда",
-    "Пожарная безопасность и противопожарные системыа",
-    "Другое",
-  ],
-  "IT и программное обеспечение для промышленности": [
-    "Разработка специализированного ПО для заводов и производств",
-    "SCADA, MES, ERP-системы",
-    "Инженерное ПО (AutoCAD, SolidWorks, 3D моделирование)",
-    "Промышленный интернет вещей (IIoT)",
-    "Другое",
-  ],
-  "Кадровые услуги и обучение": [
-    "Поиск и подбор инженеров, проектировщиков, монтажников",
-    "Аутсорсинг производственного персонала",
-    "Курсы и тренинги по промышленному инжинирингу",
-    "Аттестация персонала (сварщики, электрики, операторы)",
-    "Другое",
-  ],
-  "Другое": ["Другое"],
-};
 
 const CreateResumePage = () => {
   const navigate = useNavigate();
 
+  const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [title, setTitle] = useState("");
@@ -96,9 +19,22 @@ const CreateResumePage = () => {
   const [documents, setDocuments] = useState(null);
   const [error, setError] = useState("");
 
+  // ⏬ Загружаем категории при монтировании компонента
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get("/categories/");
+        setCategories(response.data);
+      } catch (error) {
+        console.error("Ошибка загрузки категорий:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   const handleCategoryChange = (event) => {
-    const category = event.target.value;
-    setSelectedCategory(category);
+    setSelectedCategory(event.target.value);
     setSelectedSubcategory("");
   };
 
@@ -167,6 +103,7 @@ const CreateResumePage = () => {
       <h1>Создать резюме</h1>
 
       <form onSubmit={handleSubmit} style={styles.form}>
+        {/* Категория */}
         <label style={styles.label}>
           Категория:
           <select
@@ -176,14 +113,15 @@ const CreateResumePage = () => {
             style={styles.input}
           >
             <option value="">Выберите категорию</option>
-            {Object.keys(categories).map((category) => (
-              <option key={category} value={category}>
-                {category}
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
               </option>
             ))}
           </select>
         </label>
 
+        {/* Подкатегория */}
         {selectedCategory && (
           <label style={styles.label}>
             Подкатегория:
@@ -194,15 +132,18 @@ const CreateResumePage = () => {
               style={styles.input}
             >
               <option value="">Выберите подкатегорию</option>
-              {categories[selectedCategory].map((subcategory) => (
-                <option key={subcategory} value={subcategory}>
-                  {subcategory}
-                </option>
-              ))}
+              {categories
+                .find((category) => category.id.toString() === selectedCategory)
+                ?.subcategories.map((subcategory) => (
+                  <option key={subcategory.id} value={subcategory.id}>
+                    {subcategory.name}
+                  </option>
+                ))}
             </select>
           </label>
         )}
 
+        {/* Название */}
         <label style={styles.label}>
           Название:
           <input
@@ -214,6 +155,7 @@ const CreateResumePage = () => {
           />
         </label>
 
+        {/* Описание */}
         <label style={styles.label}>
           Описание:
           <textarea
@@ -224,6 +166,7 @@ const CreateResumePage = () => {
           />
         </label>
 
+        {/* Тип цены */}
         <label style={styles.label}>
           Тип цены:
           <select
@@ -237,6 +180,7 @@ const CreateResumePage = () => {
           </select>
         </label>
 
+        {/* Цена */}
         {priceType === "fixed" && (
           <label style={styles.label}>
             Фиксированная цена (₽):
@@ -276,6 +220,7 @@ const CreateResumePage = () => {
           </>
         )}
 
+        {/* Локация */}
         <label style={styles.label}>
           Локация:
           <select
@@ -283,7 +228,7 @@ const CreateResumePage = () => {
             onChange={(e) => setLocation(e.target.value)}
             style={styles.input}
           >
-            <option value="on_site">Выезд</option>
+            <option value="on_site">На месте</option>
             <option value="remote">Удаленно</option>
           </select>
         </label>
@@ -301,6 +246,7 @@ const CreateResumePage = () => {
           </label>
         )}
 
+        {/* Примеры работ */}
         <label style={styles.label}>
           Примеры работ:
           <input
@@ -311,8 +257,10 @@ const CreateResumePage = () => {
           />
         </label>
 
+        {/* Ошибки */}
         {error && <p style={styles.error}>{error}</p>}
 
+        {/* Кнопка */}
         <button type="submit" style={styles.button}>
           Создать резюме
         </button>

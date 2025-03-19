@@ -90,8 +90,8 @@ class Resume(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='resumes')
-    category = models.CharField(max_length=255)
-    subcategory = models.CharField(max_length=255)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="resumes")
+    subcategory = models.ForeignKey(Subcategory, on_delete=models.CASCADE, related_name="resumes")
     title = models.CharField(max_length=255)
     description = models.TextField()
 
