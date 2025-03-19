@@ -3,7 +3,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import (
     UserListView, UserDetailView, RegisterView, ProfileDetailView,
     AdListCreateView, AdDetailView, UserAdsView,
-    ResumeListCreateView, ResumeDetailView, UserResumesView, AdSearchView, CategoryListView
+    ResumeListCreateView, ResumeDetailView, UserResumesView, AdSearchView, CategoryListView, AdFilterView
 )
 
 urlpatterns = [
@@ -34,6 +34,7 @@ urlpatterns = [
 
     # Поиск
     path('ads/search/', AdSearchView.as_view(), name='ad-search'),
+    path('ads/filter/', AdFilterView.as_view(), name='ad-filter'),
 
     # Категории
     path('categories/', CategoryListView.as_view(), name='category-list'),

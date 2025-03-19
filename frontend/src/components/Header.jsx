@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/api.js";
+
 import logoutIcon from "../assets/logout_button.png";
 import profileIcon from "../assets/profile_button.png";
 import messagesIcon from "../assets/messages_button.png";
@@ -11,10 +12,7 @@ const Header = ({ isAuthenticated, handleLogout }) => {
   const location = useLocation();
   const filtersRef = useRef();
 
-  // Категории из бэкенда
   const [categories, setCategories] = useState([]);
-
-  // Поиск, фильтры и профиль
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [profileData, setProfileData] = useState({
@@ -29,12 +27,11 @@ const Header = ({ isAuthenticated, handleLogout }) => {
     price_to: "",
     execution_time: "",
     location: "",
-    sort_by: "newest",
+    ordering: "-created_at", // default sorting
   };
 
   const [filters, setFilters] = useState(initialFilters);
 
-  // Получаем категории с бэка
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -44,15 +41,11 @@ const Header = ({ isAuthenticated, handleLogout }) => {
         console.error("Ошибка загрузки категорий:", error);
       }
     };
-
     fetchCategories();
   }, []);
 
-  // Получаем профиль, если пользователь авторизован
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchProfile();
-    }
+    if (isAuthenticated) fetchProfile();
   }, [isAuthenticated]);
 
   const fetchProfile = async () => {
@@ -64,92 +57,80 @@ const Header = ({ isAuthenticated, handleLogout }) => {
     }
   };
 
-  // Очистка поискового запроса при переходе на главную
   useEffect(() => {
-    if (location.pathname === "/") {
-      setSearchQuery("");
-    }
+    if (location.pathname === "/") setSearchQuery("");
   }, [location.pathname]);
 
-  // Закрытие фильтров при клике вне блока
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (filtersRef.current && !filtersRef.current.contains(event.target)) {
         setShowFilters(false);
       }
     };
-
     if (showFilters) {
       document.addEventListener("mousedown", handleClickOutside);
     }
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showFilters]);
 
-  // Поиск по объявлениям или исполнителям
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
-
-    try {
-      const response = await api.get(`/ads/search/?search=${encodeURIComponent(searchQuery)}`);
-      navigate("/search-results", { state: { results: response.data } });
-    } catch (error) {
-      console.error("Ошибка при поиске:", error);
-    }
-  };
-
-  // Переключение показа фильтров
-  const toggleFilters = () => {
-    setShowFilters((prev) => !prev);
-  };
-
-  // Изменение фильтров
-  const handleFilterChange = (field, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [field]: value,
-      ...(field === "category" && { subcategory: "" }), // сбрасываем подкатегорию при смене категории
-    }));
-  };
-
-  // Применение фильтров
-  const applyFilters = async () => {
+  // applySearchAndFilters принимает внешние фильтры
+  const applySearchAndFilters = async (customFilters = filters) => {
     try {
       const params = new URLSearchParams();
 
-      Object.entries(filters).forEach(([key, value]) => {
+      if (searchQuery.trim()) params.append("search", searchQuery.trim());
+
+      Object.entries(customFilters).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
 
-      const response = await api.get(`/ads/filter/?${params.toString()}`);
+      const endpoint = profileData.is_client
+        ? `/contractors/search/?${params.toString()}`
+        : `/ads/search/?${params.toString()}`;
+
+      const response = await api.get(endpoint);
       navigate("/search-results", { state: { results: response.data } });
       setShowFilters(false);
     } catch (error) {
-      console.error("Ошибка применения фильтров:", error);
+      console.error("Ошибка применения поиска/фильтрации:", error);
     }
   };
 
-  // Сброс фильтров
-  const resetFilters = async () => {
+  const handleSearch = () => {
+    applySearchAndFilters();
+  };
+
+  const applyFilters = () => {
+    applySearchAndFilters();
+  };
+
+  const resetFilters = () => {
     setFilters(initialFilters);
+    applySearchAndFilters(initialFilters); // Передаем начальные фильтры
+  };
 
-    try {
-      const response = await api.get("/ads/filter/");
-      navigate("/search-results", { state: { results: response.data } });
-      setShowFilters(false);
-    } catch (error) {
-      console.error("Ошибка при сбросе фильтров:", error);
+  const handleFilterChange = (field, value) => {
+    if (field === "sort_by") {
+      setFilters((prev) => ({
+        ...prev,
+        ordering: value === "newest" ? "-created_at" : "created_at",
+      }));
+    } else {
+      setFilters((prev) => ({
+        ...prev,
+        [field]: value,
+        ...(field === "category" && { subcategory: "" }),
+      }));
     }
   };
 
-  // Выход с очисткой фильтров
   const handleLogoutWithReset = () => {
     setFilters(initialFilters);
     setShowFilters(false);
-    handleLogout(); // исходный обработчик из родителя
-    navigate("/"); // перенаправляем на главную после выхода
+    handleLogout();
+    navigate("/");
   };
 
   const searchPlaceholder = profileData.is_client
@@ -175,7 +156,7 @@ const Header = ({ isAuthenticated, handleLogout }) => {
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             style={styles.searchInput}
           />
-          <button style={styles.filterButton} onClick={toggleFilters}>
+          <button style={styles.filterButton} onClick={() => setShowFilters(!showFilters)}>
             <img src={filtersIcon} alt="Фильтры" style={styles.icon} />
           </button>
           <button style={styles.searchButton} onClick={handleSearch}>Найти</button>
@@ -210,10 +191,7 @@ const Header = ({ isAuthenticated, handleLogout }) => {
         ) : (
           <>
             <button style={styles.authButton} onClick={() => navigate("/login")}>Войти</button>
-            <button
-              style={{ ...styles.authButton, marginLeft: "10px" }}
-              onClick={() => navigate("/register")}
-            >
+            <button style={{ ...styles.authButton, marginLeft: "10px" }} onClick={() => navigate("/register")}>
               Регистрация
             </button>
           </>
@@ -238,7 +216,6 @@ const Header = ({ isAuthenticated, handleLogout }) => {
             </select>
           </div>
 
-          {/* Подкатегория */}
           {filters.category && (
             <div style={styles.filterGroup}>
               <label>Подкатегория</label>
@@ -248,7 +225,7 @@ const Header = ({ isAuthenticated, handleLogout }) => {
               >
                 <option value="">Все подкатегории</option>
                 {categories
-                  .find((category) => category.id.toString() === filters.category)
+                  .find((cat) => cat.id.toString() === filters.category)
                   ?.subcategories.map((subcategory) => (
                     <option key={subcategory.id} value={subcategory.id}>
                       {subcategory.name}
@@ -258,43 +235,37 @@ const Header = ({ isAuthenticated, handleLogout }) => {
             </div>
           )}
 
-          {/* Цена от */}
           <div style={styles.filterGroup}>
             <label>Цена от (₽)</label>
             <input
               type="number"
-              placeholder="Минимальная цена"
               value={filters.price_from}
               onChange={(e) => handleFilterChange("price_from", e.target.value)}
             />
           </div>
 
-          {/* Цена до */}
           <div style={styles.filterGroup}>
             <label>Цена до (₽)</label>
             <input
               type="number"
-              placeholder="Максимальная цена"
               value={filters.price_to}
               onChange={(e) => handleFilterChange("price_to", e.target.value)}
             />
           </div>
 
-          {/* Срок выполнения */}
           <div style={styles.filterGroup}>
             <label>Срок выполнения</label>
             <select
               value={filters.execution_time}
               onChange={(e) => handleFilterChange("execution_time", e.target.value)}
             >
-              <option value="">Любой срок</option>
+              <option value="">Любой</option>
               <option value="one_time">Разовое задание</option>
               <option value="long_term">Долгосрочное сотрудничество</option>
               <option value="urgent">Срочный проект</option>
             </select>
           </div>
 
-          {/* Локация */}
           <div style={styles.filterGroup}>
             <label>Локация</label>
             <select
@@ -307,11 +278,10 @@ const Header = ({ isAuthenticated, handleLogout }) => {
             </select>
           </div>
 
-          {/* Сортировка */}
           <div style={styles.filterGroup}>
             <label>Сортировка</label>
             <select
-              value={filters.sort_by}
+              value={filters.ordering === "-created_at" ? "newest" : "oldest"}
               onChange={(e) => handleFilterChange("sort_by", e.target.value)}
             >
               <option value="newest">Сначала новые</option>
@@ -320,12 +290,8 @@ const Header = ({ isAuthenticated, handleLogout }) => {
           </div>
 
           <div style={styles.filterButtonsContainer}>
-            <button style={styles.applyButton} onClick={applyFilters}>
-              Применить фильтры
-            </button>
-            <button style={styles.clearButton} onClick={resetFilters}>
-              Очистить фильтры
-            </button>
+            <button style={styles.applyButton} onClick={applyFilters}>Применить</button>
+            <button style={styles.clearButton} onClick={resetFilters}>Сбросить</button>
           </div>
         </div>
       )}

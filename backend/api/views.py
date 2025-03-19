@@ -1,3 +1,4 @@
+import django_filters
 from rest_framework import generics, permissions, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import User, Ad, Resume, ResumeDocument, Category
@@ -5,6 +6,7 @@ from .serializers import UserSerializer, RegisterSerializer, AdSerializer, Resum
     CategorySerializer
 from rest_framework import status
 from rest_framework import generics, filters
+from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -114,11 +116,60 @@ class UserResumesView(generics.ListAPIView):
         return Resume.objects.filter(user=self.request.user).order_by("-created_at")
 
 
-class AdSearchView(generics.ListAPIView):
-    queryset = Ad.objects.all().order_by("-created_at")
+class AdFilter(django_filters.FilterSet):
+    # Фильтры по цене (ценовой диапазон)
+    price_from = django_filters.NumberFilter(field_name="price_from", lookup_expr='gte')
+    price_to = django_filters.NumberFilter(field_name="price_to", lookup_expr='lte')
+
+    # Категория и подкатегория
+    category = django_filters.NumberFilter(field_name="category__id")
+    subcategory = django_filters.NumberFilter(field_name="subcategory__id")
+
+    # Локация (on_site / remote)
+    location = django_filters.CharFilter(field_name="location")
+
+    # Время выполнения задачи
+    execution_time = django_filters.CharFilter(field_name="execution_time")
+
+    # Город, если location=on_site
+    city = django_filters.CharFilter(field_name="city", lookup_expr='icontains')
+
+    class Meta:
+        model = Ad
+        fields = [
+            'category',
+            'subcategory',
+            'price_from',
+            'price_to',
+            'execution_time',
+            'location',
+            'city',
+        ]
+
+
+class AdFilterView(generics.ListAPIView):
+    queryset = Ad.objects.all()
     serializer_class = AdSerializer
-    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
-    search_fields = ['title', 'description']  # Можно добавить еще 'category', 'subcategory'
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_class = AdFilter
+
+    ordering_fields = ['created_at', 'price_from', 'price_to']
+    ordering = ['-created_at']
+
+
+class AdSearchView(generics.ListAPIView):
+    queryset = Ad.objects.all()
+    serializer_class = AdSerializer
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend, OrderingFilter]
+
+    # Поиск по полям title и description
+    search_fields = ['title', 'description']
+
+    # Фильтрация через кастомный FilterSet
+    filterset_class = AdFilter
+
+    ordering_fields = ['created_at', 'price_from', 'price_to']
+    ordering = ['-created_at']
 
 
 class CategoryListView(generics.ListAPIView):
