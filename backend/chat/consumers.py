@@ -6,6 +6,7 @@ from .models import Message
 
 User = get_user_model()
 
+
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']  # e.g. "user_13"
@@ -40,7 +41,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await sync_to_async(Message.objects.create)(
             sender=sender,
             recipient=recipient,
-            message=message
+            message=message,
+            is_read=(sender == recipient)
         )
 
         # Отправляем сообщение всем в комнате
@@ -58,5 +60,3 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'message': event['message'],
             'sender': event['sender'],
         }))
-
-

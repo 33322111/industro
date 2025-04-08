@@ -7,22 +7,24 @@ const ChatWindow = ({ recipientId, onClose }) => {
   const socketRef = useRef(null);
   const bottomRef = useRef(null);
 
-  // Получение токена из localStorage
   const token = localStorage.getItem("authToken");
 
-  // Загрузка истории сообщений
+  // Загрузка истории сообщений и сброс непрочитанных
   useEffect(() => {
     const fetchHistory = async () => {
       try {
         const roomName = `user_${recipientId}`;
         const response = await api.get(`/chat/history/${roomName}/`);
         setMessages(response.data);
+
+        // Сброс непрочитанных сообщений
+        await api.post(`/chat/mark-as-read/${roomName}/`);
       } catch (err) {
         console.error("Ошибка загрузки истории сообщений", err);
       }
     };
 
-    fetchHistory();
+    if (recipientId) fetchHistory();
   }, [recipientId]);
 
   // WebSocket подключение
@@ -52,9 +54,7 @@ const ChatWindow = ({ recipientId, onClose }) => {
 
   const sendMessage = () => {
     if (input.trim() && socketRef.current?.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({
-        message: input,
-      }));
+      socketRef.current.send(JSON.stringify({ message: input }));
       setInput("");
     }
   };
@@ -82,7 +82,10 @@ const ChatWindow = ({ recipientId, onClose }) => {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
-        <button onClick={sendMessage} className="bg-blue-500 text-white px-4 py-1 rounded">
+        <button
+          onClick={sendMessage}
+          className="bg-blue-500 text-white px-4 py-1 rounded"
+        >
           Отправить
         </button>
       </div>
