@@ -41,7 +41,7 @@ const Header = ({isAuthenticated, handleLogout, toggleChatSidebar}) => {
 
         if (isAuthenticated) {
             fetchUnreadCount();
-            const interval = setInterval(fetchUnreadCount, 15000);
+            const interval = setInterval(fetchUnreadCount, 7500);
             return () => clearInterval(interval);
         }
     }, [isAuthenticated]);

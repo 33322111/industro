@@ -3,7 +3,8 @@ from .models import Message
 
 class MessageSerializer(serializers.ModelSerializer):
     sender = serializers.StringRelatedField()
+    recipient = serializers.StringRelatedField()
 
     class Meta:
         model = Message
-        fields = ["id", "sender", "message", "timestamp"]
+        fields = ["id", "sender", "recipient", "message", "timestamp"]

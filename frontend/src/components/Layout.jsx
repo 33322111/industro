@@ -1,87 +1,81 @@
-import React, {useState, useRef, useEffect} from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Header from "./Header.jsx";
 import ChatSidebar from "../pages/ChatSidebar.jsx";
+import ChatWindow from "../pages/ChatWindow.jsx";
 
-const Layout = ({children, isAuthenticated, handleLogout}) => {
-    const [showChatSidebar, setShowChatSidebar] = useState(false);
-    const chatSidebarRef = useRef(null);
+const Layout = ({ children, isAuthenticated, handleLogout }) => {
+  const [showChatSidebar, setShowChatSidebar] = useState(false);
+  const [activeRoom, setActiveRoom] = useState(null);
+  const chatSidebarRef = useRef(null);
 
-    const toggleChatSidebar = () => setShowChatSidebar((prev) => !prev);
+  const toggleChatSidebar = () => {
+    setShowChatSidebar((prev) => !prev);
+    setActiveRoom(null); // сбрасываем активный чат при повторном открытии
+  };
 
-    // Закрытие по клику вне ChatSidebar
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            // Проверка: клик был вне sidebar и вне кнопки (если нужно)
-            const clickedInsideSidebar = e.target.closest("#chatSidebar");
-            const clickedToggleButton = e.target.closest("#chatToggleButton");
+  const handleChatSelect = (roomName) => {
+    setActiveRoom(roomName);
+    setShowChatSidebar(false);
+  };
 
-            if (!clickedInsideSidebar && !clickedToggleButton) {
-                setShowChatSidebar(false);
-            }
-        };
+  // Закрытие по клику вне sidebar
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      const clickedInsideSidebar = e.target.closest("#chatSidebar");
+      const clickedToggleButton = e.target.closest("#chatToggleButton");
+      const clickedInsideChatWindow = e.target.closest("#chatWindow");
 
-        if (showChatSidebar) {
-            document.addEventListener("mousedown", handleClickOutside);
-        }
+      if (!clickedInsideSidebar && !clickedToggleButton && !clickedInsideChatWindow) {
+        setShowChatSidebar(false);
+        setActiveRoom(null);
+      }
+    };
 
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [showChatSidebar]);
+    if (showChatSidebar || activeRoom) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
 
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showChatSidebar, activeRoom]);
 
-    return (
-        <div style={{display: "flex", flexDirection: "column", minHeight: "100vh", position: "relative"}}>
-            <Header
-                isAuthenticated={isAuthenticated}
-                handleLogout={handleLogout}
-                toggleChatSidebar={toggleChatSidebar}
-            />
+  return (
+    <div className="flex flex-col min-h-screen relative">
+      <Header
+        isAuthenticated={isAuthenticated}
+        handleLogout={handleLogout}
+        toggleChatSidebar={toggleChatSidebar}
+      />
 
-            {/* Обёртка для sidebar, ПЕРЕД main */}
-            <div style={{position: "absolute", top: "80px", right: "20px", zIndex: 999}}>
-                {showChatSidebar && (
-                    <div
-                        id="chatSidebar"
-                        ref={chatSidebarRef}
-                        style={{
-                            position: "absolute",
-                            top: "50px",
-                            right: "20px",
-                            zIndex: 999,
-                            width: "320px",
-                            maxHeight: "80vh",
-                            overflowY: "auto",
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                            borderRadius: "10px",
-                            backgroundColor: "#fff",
-                        }}
-                    >
-                        <ChatSidebar onSelectChat={() => setShowChatSidebar(false)}/>
-                    </div>
-                )}
-            </div>
-
-            <main style={styles.main}>{children}</main>
-
-            <footer style={styles.footer}>
-                <p>&copy; {new Date().getFullYear()} Industro. Все права защищены.</p>
-            </footer>
+      {/* Chat Sidebar */}
+      {showChatSidebar && (
+        <div
+          id="chatSidebar"
+          ref={chatSidebarRef}
+          className="absolute top-[80px] right-5 z-50 w-[340px] max-h-[80vh] overflow-y-auto rounded-xl shadow-xl bg-white"
+        >
+          <ChatSidebar onSelectChat={handleChatSelect} />
         </div>
-    );
-};
+      )}
 
-const styles = {
-    main: {
-        flex: 1,
-        padding: "20px",
-    },
-    footer: {
-        backgroundColor: "#333",
-        color: "white",
-        textAlign: "center",
-        padding: "10px 0",
-    },
+      {/* Chat Window */}
+      {activeRoom && (
+        <div id="chatWindow">
+          <ChatWindow
+            roomName={activeRoom}
+            onClose={() => setActiveRoom(null)}
+          />
+        </div>
+      )}
+
+      <main className="flex-1 p-5">{children}</main>
+
+      <footer className="bg-gray-800 text-white text-center py-3">
+        <p>&copy; {new Date().getFullYear()} Industro. Все права защищены.</p>
+      </footer>
+    </div>
+  );
 };
 
 export default Layout;

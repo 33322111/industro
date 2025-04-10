@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../services/api";
 import defaultAvatar from "../assets/default_avatar.png";
-import '../index.css';
+import "../index.css";
 
 const ChatSidebar = ({ onSelectChat }) => {
   const [chats, setChats] = useState([]);
@@ -18,6 +18,15 @@ const ChatSidebar = ({ onSelectChat }) => {
 
     fetchChats();
   }, []);
+
+  const handleChatClick = async (roomName) => {
+    try {
+      await api.post(`/chat/mark-as-read/${roomName}/`);
+      onSelectChat(roomName);
+    } catch (err) {
+      console.error("Ошибка при сбросе непрочитанных сообщений:", err);
+    }
+  };
 
   return (
     <div className="w-[340px] max-h-[520px] bg-gradient-to-br from-white to-blue-50 shadow-xl border border-gray-200 rounded-2xl overflow-y-auto p-5">
@@ -48,12 +57,11 @@ const ChatSidebar = ({ onSelectChat }) => {
             : "";
 
           return (
-            <React.Fragment key={chat.id || `${chat.username}_${chat.room_name}`}>
+            <React.Fragment key={chat.id || `${chat.username}_${chat.user_id}`}>
               <div
                 className="flex justify-between items-start px-4 py-3 rounded-xl bg-blue-50 hover:bg-white hover:shadow-md transition duration-300 cursor-pointer"
-                onClick={() => onSelectChat(chat.room_name)}
+                onClick={() => handleChatClick(`user_${chat.user_id}`)}
               >
-                {/* Левая часть: аватар и текст */}
                 <div className="flex gap-3 items-start w-[75%]">
                   <img
                     src={chat.avatar || defaultAvatar}
@@ -70,8 +78,6 @@ const ChatSidebar = ({ onSelectChat }) => {
                     </span>
                   </div>
                 </div>
-
-                {/* Правая часть: дата и счётчик */}
                 <div className="flex flex-col items-end text-xs text-gray-400 min-w-[70px] text-right">
                   <span>{formattedDate}</span>
                   <span>{formattedTime}</span>
@@ -82,7 +88,6 @@ const ChatSidebar = ({ onSelectChat }) => {
                   )}
                 </div>
               </div>
-
               {index < chats.length - 1 && (
                 <hr className="my-3 border-gray-200" />
               )}

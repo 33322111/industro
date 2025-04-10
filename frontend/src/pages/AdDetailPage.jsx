@@ -103,7 +103,7 @@ const AdDetailPage = () => {
 
       {isChatOpen && (
         <ChatWindow
-          recipientId={ad.author_id}
+          roomName={`user_${ad.author_id}`}
           onClose={handleCloseChat}
         />
       )}
