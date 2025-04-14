@@ -64,7 +64,7 @@ const ChatSidebar = ({ onSelectChat }) => {
               >
                 <div className="flex gap-3 items-start w-[75%]">
                   <img
-                    src={chat.avatar || defaultAvatar}
+                    src={`http://localhost:8000${chat.avatar}` || defaultAvatar}
                     onError={(e) => (e.target.src = defaultAvatar)}
                     alt="avatar"
                     className="w-12 h-12 rounded-full object-cover border-2 border-blue-100"

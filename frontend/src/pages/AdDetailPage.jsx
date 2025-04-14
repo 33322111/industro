@@ -9,12 +9,17 @@ const AdDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
     const fetchAd = async () => {
       try {
-        const response = await api.get(`/ads/${id}/`);
-        setAd(response.data);
+        const [adRes, userRes] = await Promise.all([
+          api.get(`/ads/${id}/`),
+          api.get(`/profile/`)
+        ]);
+        setAd(adRes.data);
+        setCurrentUserId(userRes.data.username);
       } catch (err) {
         setError("Ошибка загрузки объявления");
         console.error(err);
@@ -25,6 +30,7 @@ const AdDetailPage = () => {
 
     fetchAd();
   }, [id]);
+
 
   const handleOpenChat = () => {
     setIsChatOpen(true);
@@ -66,6 +72,10 @@ const AdDetailPage = () => {
   if (error) return <p className="text-center text-red-500">{error}</p>;
   if (!ad) return <p className="text-center text-gray-500">Объявление не найдено</p>;
 
+  console.log(currentUserId);
+  console.log(ad.author);
+  const isMyOwnAd = currentUserId === ad.author;
+
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-lg relative">
       <h1 className="text-2xl font-bold mb-4">{ad.title}</h1>
@@ -92,14 +102,16 @@ const AdDetailPage = () => {
         </p>
       </div>
 
-      <div className="mt-6">
-        <button
-          onClick={handleOpenChat}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-        >
-          Написать сообщение
-        </button>
-      </div>
+      {!isMyOwnAd && (
+        <div className="mt-6">
+          <button
+            onClick={handleOpenChat}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            Написать сообщение
+          </button>
+        </div>
+      )}
 
       {isChatOpen && (
         <ChatWindow

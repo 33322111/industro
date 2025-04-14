@@ -79,6 +79,13 @@ const Profile = ({ isAuthenticated }) => {
     }
   };
 
+  const avatarUrl =
+  profileData.avatar instanceof File
+    ? URL.createObjectURL(profileData.avatar)
+    : profileData.avatar
+      ? `http://localhost:8000${profileData.avatar}`
+      : "https://via.placeholder.com/150";
+
   return (
     <div style={styles.container}>
       <h1>Личный профиль</h1>
@@ -87,11 +94,7 @@ const Profile = ({ isAuthenticated }) => {
 
         <div style={styles.avatarWrapper}>
           <img
-            src={
-              profileData.avatar instanceof File
-                ? URL.createObjectURL(profileData.avatar)
-                : profileData.avatar || "https://via.placeholder.com/150"
-            }
+            src={avatarUrl}
             alt="Avatar"
             style={styles.avatar}
           />

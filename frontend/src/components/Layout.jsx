@@ -18,7 +18,13 @@ const Layout = ({ children, isAuthenticated, handleLogout }) => {
     setShowChatSidebar(false);
   };
 
-  // Закрытие по клику вне sidebar
+  // Обработчик "← Назад" из ChatWindow
+  const handleBackToSidebar = () => {
+    setActiveRoom(null);
+    setShowChatSidebar(true);
+  };
+
+  // Закрытие по клику вне чата/сайдбара
   useEffect(() => {
     const handleClickOutside = (e) => {
       const clickedInsideSidebar = e.target.closest("#chatSidebar");
@@ -65,6 +71,7 @@ const Layout = ({ children, isAuthenticated, handleLogout }) => {
           <ChatWindow
             roomName={activeRoom}
             onClose={() => setActiveRoom(null)}
+            onBackToSidebar={handleBackToSidebar}
           />
         </div>
       )}
