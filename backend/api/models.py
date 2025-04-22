@@ -15,6 +15,7 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+
 class Category(models.Model):
     name = models.CharField(max_length=255, unique=True)
 
@@ -28,6 +29,7 @@ class Subcategory(models.Model):
 
     def __str__(self):
         return f"{self.category.name} - {self.name}"
+
 
 class Ad(models.Model):
     PRICE_TYPE_CHOICES = [
@@ -103,15 +105,8 @@ class Resume(models.Model):
     location = models.CharField(max_length=20, choices=LOCATION_CHOICES)
     city = models.CharField(max_length=255, blank=True, null=True)
 
+    documents = models.FileField(upload_to='resume_documents/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
-
-
-class ResumeDocument(models.Model):
-    resume = models.ForeignKey(Resume, on_delete=models.CASCADE, related_name='documents')
-    file = models.FileField(upload_to='resume_documents/')
-
-    def __str__(self):
-        return f"Document for {self.resume.title}"

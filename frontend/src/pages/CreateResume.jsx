@@ -16,10 +16,9 @@ const CreateResumePage = () => {
   const [fixedPrice, setFixedPrice] = useState("");
   const [location, setLocation] = useState("on_site");
   const [city, setCity] = useState("");
-  const [documents, setDocuments] = useState(null);
+  const [document, setDocument] = useState(null);
   const [error, setError] = useState("");
 
-  // ⏬ Загружаем категории при монтировании компонента
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -41,8 +40,8 @@ const CreateResumePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!selectedCategory || !selectedSubcategory || !title || !description) {
-      setError("Пожалуйста, заполните все обязательные поля.");
+    if (!selectedCategory || !selectedSubcategory || !title || !description || !document) {
+      setError("Пожалуйста, заполните все обязательные поля и загрузите файл.");
       return;
     }
 
@@ -74,12 +73,7 @@ const CreateResumePage = () => {
     formData.append("fixed_price", fixedPrice);
     formData.append("location", location);
     formData.append("city", city);
-
-    if (documents) {
-      for (let i = 0; i < documents.length; i++) {
-        formData.append("documents", documents[i]);
-      }
-    }
+    formData.append("documents", document);
 
     try {
       const response = await api.post("/resumes/", formData, {
@@ -103,7 +97,6 @@ const CreateResumePage = () => {
       <h1>Создать резюме</h1>
 
       <form onSubmit={handleSubmit} style={styles.form}>
-        {/* Категория */}
         <label style={styles.label}>
           Категория:
           <select
@@ -121,7 +114,6 @@ const CreateResumePage = () => {
           </select>
         </label>
 
-        {/* Подкатегория */}
         {selectedCategory && (
           <label style={styles.label}>
             Подкатегория:
@@ -143,7 +135,6 @@ const CreateResumePage = () => {
           </label>
         )}
 
-        {/* Название */}
         <label style={styles.label}>
           Название:
           <input
@@ -155,7 +146,6 @@ const CreateResumePage = () => {
           />
         </label>
 
-        {/* Описание */}
         <label style={styles.label}>
           Описание:
           <textarea
@@ -166,7 +156,6 @@ const CreateResumePage = () => {
           />
         </label>
 
-        {/* Тип цены */}
         <label style={styles.label}>
           Тип цены:
           <select
@@ -180,7 +169,6 @@ const CreateResumePage = () => {
           </select>
         </label>
 
-        {/* Цена */}
         {priceType === "fixed" && (
           <label style={styles.label}>
             Фиксированная цена (₽):
@@ -220,7 +208,6 @@ const CreateResumePage = () => {
           </>
         )}
 
-        {/* Локация */}
         <label style={styles.label}>
           Локация:
           <select
@@ -246,21 +233,19 @@ const CreateResumePage = () => {
           </label>
         )}
 
-        {/* Примеры работ */}
         <label style={styles.label}>
-          Примеры работ:
+          Пример работы:
           <input
             type="file"
-            multiple
-            onChange={(e) => setDocuments(e.target.files)}
+            accept="application/pdf,image/*"
+            onChange={(e) => setDocument(e.target.files[0])}
+            required
             style={styles.input}
           />
         </label>
 
-        {/* Ошибки */}
         {error && <p style={styles.error}>{error}</p>}
 
-        {/* Кнопка */}
         <button type="submit" style={styles.button}>
           Создать резюме
         </button>

@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { useLocation, Link } from "react-router-dom";
+import api from "../services/api";
 
 const SearchResultsPage = () => {
   const location = useLocation();
@@ -12,10 +13,25 @@ const SearchResultsPage = () => {
   const indexOfLastResult = currentPage * resultsPerPage;
   const indexOfFirstResult = indexOfLastResult - resultsPerPage;
   const currentResults = results.slice(indexOfFirstResult, indexOfLastResult);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await api.get("/profile/");
+        setIsClient(res.data.is_client);
+      } catch (err) {
+        console.error("Ошибка загрузки профиля:", err);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const handlePrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
   const handleNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   const handlePageClick = (pageNumber) => setCurrentPage(pageNumber);
+
+  console.log(isClient);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -26,22 +42,27 @@ const SearchResultsPage = () => {
       ) : (
         <>
           <ul className="space-y-4">
-            {currentResults.map((ad) => (
-              <li
-                key={ad.id}
-                className="bg-white rounded-xl shadow hover:shadow-lg transition-all p-4"
-              >
-                <Link
-                  to={`/ads/${ad.id}/`}
-                  className="text-blue-600 hover:underline block"
+            {currentResults.map((item) => {
+              const linkTo = isClient
+                ? `/resumes/${item.id}/` // заказчик видит резюме
+                : `/ads/${item.id}/`;   // исполнитель — объявления
+
+              return (
+                <li
+                  key={item.id}
+                  className="bg-white rounded-xl shadow hover:shadow-lg transition-all p-4"
                 >
-                  <h4 className="text-lg font-bold mb-1">{ad.title}</h4>
-                  <p className="text-gray-600 text-sm">
-                    {ad.category_name} / {ad.subcategory_name}
-                  </p>
-                </Link>
-              </li>
-            ))}
+                  <Link to={linkTo} className="text-blue-600 hover:underline block">
+                    <h4 className="text-lg font-bold mb-1">{item.title}</h4>
+                    <p className="text-gray-600 text-sm">
+                      {isClient
+                        ? `${item.category_name} / ${item.subcategory_name}`
+                        : `${item.category_name} / ${item.subcategory_name}`}
+                    </p>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
 
           <div className="flex justify-center items-center flex-wrap gap-2 mt-6">

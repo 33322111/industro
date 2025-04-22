@@ -1,15 +1,15 @@
 import django_filters
 from rest_framework import generics, permissions, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import User, Ad, Resume, ResumeDocument, Category
+from .models import User, Ad, Resume, Category
 from .serializers import UserSerializer, RegisterSerializer, AdSerializer, ResumeSerializer, ProfileSerializer, \
     CategorySerializer
 from rest_framework import status
 from rest_framework import generics, filters
-from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 
 class UserListView(generics.ListAPIView):
@@ -84,7 +84,7 @@ class UserAdsView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Только авторизованные пользователи
 
     def get_queryset(self):
-        return Ad.objects.all().filter(author=self.request.user)
+        return Ad.objects.filter(author=self.request.user).order_by("-created_at")
 
 
 class ResumeListCreateView(generics.ListCreateAPIView):
@@ -175,3 +175,45 @@ class AdSearchView(generics.ListAPIView):
 class CategoryListView(generics.ListAPIView):
     queryset = Category.objects.prefetch_related('subcategories').all()
     serializer_class = CategorySerializer
+
+
+class ResumeFilter(django_filters.FilterSet):
+    # Фильтры по цене (ценовой диапазон)
+    price_from = django_filters.NumberFilter(field_name="price_from", lookup_expr='gte')
+    price_to = django_filters.NumberFilter(field_name="price_to", lookup_expr='lte')
+
+    # Категория и подкатегория
+    category = django_filters.NumberFilter(field_name="category__id")
+    subcategory = django_filters.NumberFilter(field_name="subcategory__id")
+
+    # Локация (on_site / remote)
+    location = django_filters.CharFilter(field_name="location")
+
+    # Город, если location=on_site
+    city = django_filters.CharFilter(field_name="city", lookup_expr='icontains')
+
+    class Meta:
+        model = Resume
+        fields = [
+            'category',
+            'subcategory',
+            'price_from',
+            'price_to',
+            'location',
+            'city',
+        ]
+
+
+class ResumeSearchView(generics.ListAPIView):
+    queryset = Resume.objects.all()
+    serializer_class = ResumeSerializer
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend, OrderingFilter]
+
+    # Поиск по названию и описанию резюме
+    search_fields = ['title', 'description']
+
+    # Кастомный фильтр
+    filterset_class = ResumeFilter
+
+    ordering_fields = ['created_at', 'price_from', 'price_to']
+    ordering = ['-created_at']

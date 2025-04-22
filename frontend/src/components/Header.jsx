@@ -112,7 +112,7 @@ const Header = ({isAuthenticated, handleLogout, toggleChatSidebar}) => {
                 if (value) params.append(key, value);
             });
             const endpoint = profileData.is_client
-                ? `/contractors/search/?${params.toString()}`
+                ? `/resumes/search/?${params.toString()}`
                 : `/ads/search/?${params.toString()}`;
             const response = await api.get(endpoint);
             navigate("/search-results", {state: {results: response.data}});

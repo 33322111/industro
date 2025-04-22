@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Ad, Resume, ResumeDocument, Subcategory, Category
+from .models import User, Ad, Resume, Subcategory, Category
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -69,14 +69,8 @@ class AdSerializer(serializers.ModelSerializer):
         return data
 
 
-class ResumeDocumentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ResumeDocument
-        fields = ['id', 'file']
-
-
 class ResumeSerializer(serializers.ModelSerializer):
-    documents = ResumeDocumentSerializer(many=True, read_only=True)
+    user = serializers.StringRelatedField(read_only=True)
 
     category_name = serializers.CharField(source='category.name', read_only=True)
     subcategory_name = serializers.CharField(source='subcategory.name', read_only=True)
