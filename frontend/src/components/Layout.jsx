@@ -80,9 +80,17 @@ const Layout = ({ children, isAuthenticated, handleLogout }) => {
 
       <footer className="bg-gray-800 text-white text-center py-3">
         <p>&copy; {new Date().getFullYear()} Industro. Все права защищены.</p>
+        <p>
+          <a
+              href="mailto:industro@yandex.ru"
+              className="text-blue-400 hover:underline"
+          >
+            industro@yandex.ru
+          </a>
+        </p>
       </footer>
     </div>
-  );
+);
 };
 
 export default Layout;

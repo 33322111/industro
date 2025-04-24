@@ -8,7 +8,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     is_client = models.BooleanField(default=False)  # Заказчик
     is_contractor = models.BooleanField(default=False)  # Исполнитель
-    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, default='avatars/default_avatar.png')
     company_info = models.TextField(blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
 
