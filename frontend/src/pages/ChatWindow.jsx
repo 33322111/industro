@@ -6,26 +6,31 @@ const ChatWindow = ({roomName, onClose, onBackToSidebar}) => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
     const [currentUserId, setCurrentUserId] = useState(null);
+    const [currentUserIdd, setCurrentUserIdd] = useState(null);
     const [recipientUsername, setRecipientUsername] = useState("");
     const socketRef = useRef(null);
     const bottomRef = useRef(null);
     const [currentUserAvatar, setCurrentUserAvatar] = useState(null);
     const [recipientAvatar, setRecipientAvatar] = useState(null);
 
-    const recipientId = roomName.split("_")[1];
     const token = localStorage.getItem("authToken");
 
     useEffect(() => {
         const fetchUser = async () => {
             try {
                 const res = await api.get("/profile/");
-                setCurrentUserId(res.data.username);
+                setCurrentUserIdd(res.data.id);
             } catch (err) {
                 console.error("Ошибка загрузки пользователя:", err);
             }
         };
         fetchUser();
     }, []);
+
+    const ids = roomName.split("_").slice(1).map(Number);
+    const recipientId = ids[0] + ids[1] - currentUserIdd;
+    console.log(recipientId);
+    console.log(currentUserIdd);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -56,7 +61,6 @@ const ChatWindow = ({roomName, onClose, onBackToSidebar}) => {
     }, [recipientId]);
 
 
-
     useEffect(() => {
         const fetchHistory = async () => {
             try {
@@ -74,12 +78,19 @@ const ChatWindow = ({roomName, onClose, onBackToSidebar}) => {
         const wsUrl = `ws://localhost:8000/ws/chat/${roomName}/?token=${token}`;
         socketRef.current = new WebSocket(wsUrl);
 
-        socketRef.current.onmessage = (event) => {
+        socketRef.current.onmessage = async (event) => {
             const data = JSON.parse(event.data);
             if (!data.timestamp) {
                 data.timestamp = new Date().toISOString();
             }
             setMessages((prev) => [...prev, data]);
+
+            try {
+                // После получения нового сообщения - сразу помечаем все как прочитанные
+                await api.post(`/chat/mark-as-read/${roomName}/`);
+            } catch (err) {
+                console.error("Ошибка при отметке сообщений прочитанными:", err);
+            }
         };
 
         socketRef.current.onclose = () => console.log("WebSocket закрыт");
@@ -100,7 +111,7 @@ const ChatWindow = ({roomName, onClose, onBackToSidebar}) => {
     return (
         <div
             id="chatWindow"
-            className="fixed top-0 right-0 w-[350px] h-full bg-white border-l shadow-lg flex flex-col z-50"
+            className="fixed top-0 right-0 w-[400px] h-full bg-white border-l shadow-lg flex flex-col z-50"
         >
             {/* Верхняя панель */}
             <div className="p-3 border-b flex justify-between items-center">

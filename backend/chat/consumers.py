@@ -24,17 +24,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = data['message']
         sender = self.scope["user"]
 
-        # Проверка, что пользователь аутентифицирован
         if not sender.is_authenticated:
             await self.close()
             return
 
-        # Извлечение recipient_id из room_name
+        # Получаем оба id из room_name
         try:
-            recipient_id = int(self.room_name.split("_")[1])
+            ids = list(map(int, self.room_name.replace("room_", "").split("_")))
+            if sender.id not in ids:
+                await self.send(text_data=json.dumps({"error": "Sender not in room"}))
+                return
+            recipient_id = ids[0] if ids[1] == sender.id else ids[1]
             recipient = await sync_to_async(User.objects.get)(id=recipient_id)
         except (IndexError, ValueError, User.DoesNotExist):
-            await self.send(text_data=json.dumps({"error": "Invalid recipient"}))
+            await self.send(text_data=json.dumps({"error": "Invalid room or recipient"}))
             return
 
         # Сохраняем сообщение

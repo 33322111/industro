@@ -94,10 +94,10 @@ const CreateResumePage = () => {
 
   return (
     <div style={styles.container}>
-      <h1>Создать резюме</h1>
+      <h1 className="text-3xl font-bold mb-6">Создать резюме</h1>
 
       <form onSubmit={handleSubmit} style={styles.form}>
-        <label style={styles.label}>
+      <label style={styles.label}>
           Категория:
           <select
             value={selectedCategory}

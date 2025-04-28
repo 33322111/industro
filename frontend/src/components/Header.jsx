@@ -172,7 +172,7 @@ const Header = ({isAuthenticated, handleLogout, toggleChatSidebar}) => {
         <header className="flex items-center justify-between p-4 bg-blue-600 text-white relative">
             <h1 className="text-2xl font-bold cursor-pointer select-none" onClick={() => navigate("/")}>Industro</h1>
 
-            {shouldShowSearchBar && (
+            {isAuthenticated && shouldShowSearchBar && (
                 <div className="flex items-center bg-white rounded-lg px-3 py-1 w-2/4 text-black">
                     <input
                         type="text"

@@ -10,13 +10,21 @@ class ChatHistoryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, room_name):
-        # Извлекаем id из room_name (например, user_13 → 13)
-        recipient_id = int(room_name.replace("user_", ""))
+        try:
+            # Извлекаем два user_id из room_name: room_13_20 → [13, 20]
+            parts = room_name.replace("room_", "").split("_")
+            user1_id, user2_id = sorted([int(parts[0]), int(parts[1])])
+        except (ValueError, IndexError):
+            return Response({"error": "Invalid room name format"}, status=400)
+
         user = request.user
 
+        if user.id not in [user1_id, user2_id]:
+            return Response({"error": "Access denied"}, status=403)
+
         messages = Message.objects.filter(
-            Q(sender=user, recipient_id=recipient_id) |
-            Q(sender_id=recipient_id, recipient=user)
+            Q(sender_id=user1_id, recipient_id=user2_id) |
+            Q(sender_id=user2_id, recipient_id=user1_id)
         ).order_by("timestamp")
 
         serializer = MessageSerializer(messages, many=True)
@@ -36,14 +44,21 @@ class MarkMessagesAsReadView(APIView):
 
     def post(self, request, room_name):
         try:
-            # формат room_name: user_{sender_id}
-            sender_id = int(room_name.split("_")[1])
-        except (IndexError, ValueError):
-            return Response({"error": "Invalid room name"}, status=400)
+            parts = room_name.replace("room_", "").split("_")
+            user1_id, user2_id = sorted([int(parts[0]), int(parts[1])])
+        except (ValueError, IndexError):
+            return Response({"error": "Invalid room name format"}, status=400)
+
+        user = request.user
+
+        if user.id not in [user1_id, user2_id]:
+            return Response({"error": "Access denied"}, status=403)
+
+        other_user_id = user2_id if user.id == user1_id else user1_id
 
         Message.objects.filter(
-            sender_id=sender_id,
-            recipient=request.user,
+            sender_id=other_user_id,
+            recipient_id=user.id,
             is_read=False
         ).update(is_read=True)
 

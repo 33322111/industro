@@ -5,14 +5,19 @@ import api from "../services/api";
 const UserProfilePage = () => {
   const { id } = useParams(); // ID пользователя из URL
   const [user, setUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null); // текущий пользователь
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get(`/users/${id}/`);
-        setUser(response.data);
+        const [userRes, profileRes] = await Promise.all([
+          api.get(`/users/${id}/`),
+          api.get(`/profile/`),
+        ]);
+        setUser(userRes.data);
+        setCurrentUser(profileRes.data);
       } catch (err) {
         setError("Ошибка загрузки профиля пользователя.");
         console.error(err);
@@ -21,12 +26,14 @@ const UserProfilePage = () => {
       }
     };
 
-    fetchUserProfile();
+    fetchData();
   }, [id]);
 
   if (loading) return <p className="text-center text-gray-500">Загрузка профиля...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
   if (!user) return <p className="text-center text-gray-500">Профиль не найден</p>;
+
+  const isOwnProfile = currentUser && currentUser.username === user.username;
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-lg">
@@ -44,13 +51,15 @@ const UserProfilePage = () => {
         {user.address && <p><strong>Адрес:</strong> {user.address}</p>}
       </div>
 
-      {/* Добавляем кнопку, чтобы начать чат */}
-      <button
-        className="mt-6 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-        onClick={() => console.log("Открыть чат с этим пользователем!")}
-      >
-        Написать сообщение
-      </button>
+      {/* Кнопка чата — только если это НЕ свой профиль */}
+      {!isOwnProfile && (
+        <button
+          className="mt-6 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          onClick={() => console.log("Открыть чат с этим пользователем!")}
+        >
+          Написать сообщение
+        </button>
+      )}
     </div>
   );
 };

@@ -65,7 +65,7 @@ const CreateAdPage = () => {
     }
 
     if (!documents || documents.length === 0) {
-      setError("Пожалуйста, загрузите документы.");
+      setError("Пожалуйста, загрузите документ.");
       return;
     }
 
@@ -107,193 +107,193 @@ const CreateAdPage = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <h1>Создать объявление</h1>
+      <div style={styles.container}>
+        <h1 className="text-3xl font-bold mb-6">Разместить объявление</h1>
 
-      <form onSubmit={handleSubmit} style={styles.form}>
+        <form onSubmit={handleSubmit} style={styles.form}>
 
-        <label style={styles.label}>
-          Категория:
-          <select
-            value={selectedCategory}
-            onChange={(e) => {
-              setSelectedCategory(e.target.value);
-              setSelectedSubcategory("");
-            }}
-            style={styles.input}
-            required
-          >
-            <option value="">Выберите категорию</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {selectedCategory && (
           <label style={styles.label}>
-            Подкатегория:
+            Категория:
             <select
-              value={selectedSubcategory}
-              onChange={(e) => setSelectedSubcategory(e.target.value)}
-              style={styles.input}
-              required
+                value={selectedCategory}
+                onChange={(e) => {
+                  setSelectedCategory(e.target.value);
+                  setSelectedSubcategory("");
+                }}
+                style={styles.input}
+                required
             >
-              <option value="">Выберите подкатегорию</option>
-              {categories
-                .find((category) => category.id.toString() === selectedCategory)
-                ?.subcategories.map((subcategory) => (
-                  <option key={subcategory.id} value={subcategory.id}>
-                    {subcategory.name}
+              <option value="">Выберите категорию</option>
+              {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
                   </option>
-                ))}
+              ))}
             </select>
           </label>
-        )}
 
-        <label style={styles.label}>
-          Название:
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            style={styles.input}
-            required
-          />
-        </label>
+          {selectedCategory && (
+              <label style={styles.label}>
+                Подкатегория:
+                <select
+                    value={selectedSubcategory}
+                    onChange={(e) => setSelectedSubcategory(e.target.value)}
+                    style={styles.input}
+                    required
+                >
+                  <option value="">Выберите подкатегорию</option>
+                  {categories
+                      .find((category) => category.id.toString() === selectedCategory)
+                      ?.subcategories.map((subcategory) => (
+                          <option key={subcategory.id} value={subcategory.id}>
+                            {subcategory.name}
+                          </option>
+                      ))}
+                </select>
+              </label>
+          )}
 
-        <label style={styles.label}>
-          Описание:
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            style={{ ...styles.input, height: "100px" }}
-            required
-          />
-        </label>
-
-        <label style={styles.label}>
-          Тип цены:
-          <select
-            value={priceType}
-            onChange={(e) => setPriceType(e.target.value)}
-            style={styles.input}
-          >
-            <option value="fixed">Фиксированная цена</option>
-            <option value="range">Диапазон</option>
-            <option value="negotiable">Договорная</option>
-          </select>
-        </label>
-
-        {priceType === "fixed" && (
           <label style={styles.label}>
-            Фиксированная цена (₽):
+            Название:
             <input
-              type="number"
-              value={fixedPrice}
-              onChange={(e) => setFixedPrice(e.target.value)}
-              style={styles.input}
-              required
-            />
-          </label>
-        )}
-
-        {priceType === "range" && (
-          <>
-            <label style={styles.label}>
-              Цена от (₽):
-              <input
-                type="number"
-                value={priceFrom}
-                onChange={(e) => setPriceFrom(e.target.value)}
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 style={styles.input}
                 required
-              />
-            </label>
+            />
+          </label>
 
-            <label style={styles.label}>
-              Цена до (₽):
-              <input
-                type="number"
-                value={priceTo}
-                onChange={(e) => setPriceTo(e.target.value)}
-                style={styles.input}
+          <label style={styles.label}>
+            Описание:
+            <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                style={{...styles.input, height: "100px"}}
                 required
-              />
-            </label>
-          </>
-        )}
-
-        <label style={styles.label}>
-          Срок выполнения:
-          <select
-            value={executionTime}
-            onChange={(e) => setExecutionTime(e.target.value)}
-            style={styles.input}
-          >
-            <option value="one_time">Разовое задание</option>
-            <option value="long_term">Долгосрочное сотрудничество</option>
-            <option value="urgent">Срочный проект</option>
-          </select>
-        </label>
-
-        {executionTime === "urgent" && (
-          <label style={styles.label}>
-            Сроки проекта (дней):
-            <input
-              type="number"
-              value={projectDeadline}
-              onChange={(e) => setProjectDeadline(e.target.value)}
-              style={styles.input}
-              required
             />
           </label>
-        )}
 
-        <label style={styles.label}>
-          Локация:
-          <select
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            style={styles.input}
-          >
-            <option value="on_site">На месте</option>
-            <option value="remote">Удаленно</option>
-          </select>
-        </label>
-
-        {location === "on_site" && (
           <label style={styles.label}>
-            Город:
+            Тип цены:
+            <select
+                value={priceType}
+                onChange={(e) => setPriceType(e.target.value)}
+                style={styles.input}
+            >
+              <option value="fixed">Фиксированная цена</option>
+              <option value="range">Диапазон</option>
+              <option value="negotiable">Договорная</option>
+            </select>
+          </label>
+
+          {priceType === "fixed" && (
+              <label style={styles.label}>
+                Фиксированная цена (₽):
+                <input
+                    type="number"
+                    value={fixedPrice}
+                    onChange={(e) => setFixedPrice(e.target.value)}
+                    style={styles.input}
+                    required
+                />
+              </label>
+          )}
+
+          {priceType === "range" && (
+              <>
+                <label style={styles.label}>
+                  Цена от (₽):
+                  <input
+                      type="number"
+                      value={priceFrom}
+                      onChange={(e) => setPriceFrom(e.target.value)}
+                      style={styles.input}
+                      required
+                  />
+                </label>
+
+                <label style={styles.label}>
+                  Цена до (₽):
+                  <input
+                      type="number"
+                      value={priceTo}
+                      onChange={(e) => setPriceTo(e.target.value)}
+                      style={styles.input}
+                      required
+                  />
+                </label>
+              </>
+          )}
+
+          <label style={styles.label}>
+            Срок выполнения:
+            <select
+                value={executionTime}
+                onChange={(e) => setExecutionTime(e.target.value)}
+                style={styles.input}
+            >
+              <option value="one_time">Разовое задание</option>
+              <option value="long_term">Долгосрочное сотрудничество</option>
+              <option value="urgent">Срочный проект</option>
+            </select>
+          </label>
+
+          {executionTime === "urgent" && (
+              <label style={styles.label}>
+                Сроки проекта (дней):
+                <input
+                    type="number"
+                    value={projectDeadline}
+                    onChange={(e) => setProjectDeadline(e.target.value)}
+                    style={styles.input}
+                    required
+                />
+              </label>
+          )}
+
+          <label style={styles.label}>
+            Локация:
+            <select
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                style={styles.input}
+            >
+              <option value="on_site">На месте</option>
+              <option value="remote">Удаленно</option>
+            </select>
+          </label>
+
+          {location === "on_site" && (
+              <label style={styles.label}>
+                Город:
+                <input
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    style={styles.input}
+                    required
+                />
+              </label>
+          )}
+
+          <label style={styles.label}>
+            Документ:
             <input
-              type="text"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              style={styles.input}
-              required
+                type="file"
+                multiple
+                onChange={(e) => setDocuments(e.target.files)}
+                style={styles.input}
             />
           </label>
-        )}
 
-        <label style={styles.label}>
-          Документы:
-          <input
-            type="file"
-            multiple
-            onChange={(e) => setDocuments(e.target.files)}
-            style={styles.input}
-          />
-        </label>
+          <button type="submit" style={styles.button}>
+            Разместить объявление
+          </button>
+        </form>
 
-        <button type="submit" style={styles.button}>
-          Создать объявление
-        </button>
-      </form>
-
-      {error && <p style={styles.error}>{error}</p>}
-    </div>
+        {error && <p style={styles.error}>{error}</p>}
+      </div>
   );
 };
 

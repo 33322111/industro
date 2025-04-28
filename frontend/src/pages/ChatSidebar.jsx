@@ -5,21 +5,34 @@ import "../index.css";
 
 const ChatSidebar = ({ onSelectChat }) => {
   const [chats, setChats] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
-    const fetchChats = async () => {
+    const fetchChatsAndProfile = async () => {
       try {
-        const res = await api.get("/chat/dialogs/");
-        setChats(res.data);
+        const [profileRes, dialogsRes] = await Promise.all([
+          api.get("/profile/"),
+          api.get("/chat/dialogs/"),
+        ]);
+
+        setCurrentUserId(profileRes.data.id);
+        setChats(dialogsRes.data);
       } catch (err) {
         console.error("Ошибка при загрузке чатов:", err);
       }
     };
 
-    fetchChats();
+    fetchChatsAndProfile();
   }, []);
 
-  const handleChatClick = async (roomName) => {
+  const getRoomName = (userId) => {
+    if (!currentUserId) return "";
+    const sortedIds = [currentUserId, userId].sort((a, b) => a - b);
+    return `room_${sortedIds[0]}_${sortedIds[1]}`;
+  };
+
+  const handleChatClick = async (userId) => {
+    const roomName = getRoomName(userId);
     try {
       await api.post(`/chat/mark-as-read/${roomName}/`);
       onSelectChat(roomName);
@@ -60,11 +73,11 @@ const ChatSidebar = ({ onSelectChat }) => {
             <React.Fragment key={chat.id || `${chat.username}_${chat.user_id}`}>
               <div
                 className="flex justify-between items-start px-4 py-3 rounded-xl bg-blue-50 hover:bg-white hover:shadow-md transition duration-300 cursor-pointer"
-                onClick={() => handleChatClick(`user_${chat.user_id}`)}
+                onClick={() => handleChatClick(chat.user_id)}
               >
                 <div className="flex gap-3 items-start w-[75%]">
                   <img
-                    src={`http://localhost:8000${chat.avatar}` || defaultAvatar}
+                    src={chat.avatar ? `http://localhost:8000${chat.avatar}` : defaultAvatar}
                     onError={(e) => (e.target.src = defaultAvatar)}
                     alt="avatar"
                     className="w-12 h-12 rounded-full object-cover border-2 border-blue-100"
