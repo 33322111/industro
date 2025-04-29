@@ -28,7 +28,7 @@ const Login = ({ onLogin }) => {
 
   return (
       <div style={styles.container}>
-        <h1>Вход</h1>
+        <h1 className="text-3xl font-bold mb-6">Вход</h1>
         <form onSubmit={handleSubmit} style={styles.form}>
           <label style={styles.label}>
             Имя пользователя:

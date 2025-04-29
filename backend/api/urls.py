@@ -4,7 +4,7 @@ from .views import (
     UserListView, UserDetailView, RegisterView, ProfileDetailView,
     AdListCreateView, AdDetailView, UserAdsView,
     ResumeListCreateView, ResumeDetailView, UserResumesView, AdSearchView, CategoryListView, AdFilterView,
-    ResumeSearchView
+    ResumeSearchView, PasswordResetConfirmView, PasswordResetView
 )
 
 urlpatterns = [
@@ -42,4 +42,8 @@ urlpatterns = [
 
     # Поиск по резюме
     path('resumes/search/', ResumeSearchView.as_view(), name='resume-search'),
+
+    # Смена пароля
+    path('password_reset/', PasswordResetView.as_view(), name='password_reset'),
+    path('password_reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 ]

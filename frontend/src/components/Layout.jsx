@@ -82,10 +82,10 @@ const Layout = ({ children, isAuthenticated, handleLogout }) => {
         <p>&copy; {new Date().getFullYear()} Industro. Все права защищены.</p>
         <p>
           <a
-              href="mailto:industro@yandex.ru"
+              href="mailto:industroo@yandex.ru"
               className="text-blue-400 hover:underline"
           >
-            industro@yandex.ru
+            industroo@yandex.ru
           </a>
         </p>
       </footer>

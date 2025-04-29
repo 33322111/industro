@@ -58,7 +58,7 @@ const Register = ({ onLogin }) => {
 
   return (
     <div style={styles.container}>
-      <h1>Регистрация</h1>
+      <h1 className="text-3xl font-bold mb-6">Регистрация</h1>
       <form onSubmit={handleSubmit} style={styles.form}>
         <label style={styles.label}>
           Никнейм:

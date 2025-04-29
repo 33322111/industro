@@ -162,3 +162,14 @@ AUTHENTICATION_BACKENDS = [
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+DEFAULT_FROM_EMAIL = 'Industro <industroo@yandex.ru>'
+EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_USE_TLS = False
+EMAIL_HOST_USER = 'industroo@yandex.ru'
+EMAIL_HOST_PASSWORD = 'jitfndslphhgmbqs'
+
+FRONTEND_URL = 'http://localhost:5173'

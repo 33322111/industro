@@ -13,6 +13,7 @@ import ResumeDetailPage from "./pages/ResumeDetailPage.jsx";
 import SearchResultsPage from "./pages/SearchResultsPage.jsx";
 import UserProfilePage from "./pages/UserProfilePage.jsx";
 import EditAdPage from "./pages/EditAdPage.jsx";
+import PasswordResetConfirm from "./pages/PasswordResetConfirm.jsx";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -86,6 +87,7 @@ function App() {
           <Route path="/search-results" element={<SearchResultsPage />} />
           <Route path="/profile/:id" element={<UserProfilePage />} />
           <Route path="/edit-ad/:id" element={<EditAdPage />} />
+          <Route path="/reset-password/:uid/:token" element={<PasswordResetConfirm />} />
         </Routes>
       </Layout>
     </Router>

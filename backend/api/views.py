@@ -4,12 +4,18 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import User, Ad, Resume, Category
 from .serializers import UserSerializer, RegisterSerializer, AdSerializer, ResumeSerializer, ProfileSerializer, \
     CategorySerializer
-from rest_framework import status
 from rest_framework import generics, filters
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.filters import SearchFilter, OrderingFilter
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.contrib.auth import get_user_model
+from django.conf import settings
+from django.shortcuts import get_object_or_404
+from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from asgiref.sync import sync_to_async
+from django.core.mail import send_mail
 
 
 class UserListView(generics.ListAPIView):
@@ -217,3 +223,62 @@ class ResumeSearchView(generics.ListAPIView):
 
     ordering_fields = ['created_at', 'price_from', 'price_to']
     ordering = ['-created_at']
+
+User = get_user_model()
+token_generator = PasswordResetTokenGenerator()
+
+class PasswordResetView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({'error': 'Email обязателен'}, status=400)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'Пользователь с таким email не найден.'}, status=404)
+
+        # Генерируем токен и ссылку
+        token = token_generator.make_token(user)
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{user.pk}/{token}/"
+
+        # Отправляем письмо
+        try:
+            send_mail(
+                subject='Восстановление пароля',
+                message=f'Для восстановления пароля перейдите по ссылке:\n{reset_url}',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            return Response({'message': 'Письмо отправлено, проверьте почту!'})
+        except Exception as e:
+            print(e)
+            return Response({'error': 'Ошибка при отправке письма.'}, status=500)
+
+class PasswordResetConfirmView(APIView):
+    authentication_classes = []
+    permission_classes = []
+    """
+    Пользователь присылает новый пароль вместе с uid и токеном.
+    """
+    def post(self, request):
+        uid = request.data.get("uid")
+        token = request.data.get("token")
+        new_password = request.data.get("new_password")
+
+        if not (uid and token and new_password):
+            return Response({"error": "Все поля обязательны"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = get_object_or_404(User, pk=uid)
+
+        if not token_generator.check_token(user, token):
+            return Response({"error": "Неверный токен или токен устарел"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+
+        return Response({"message": "Пароль успешно изменён"})
