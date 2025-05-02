@@ -5,6 +5,7 @@ import logoutIcon from "../assets/logout_button.png";
 import profileIcon from "../assets/profile_button.png";
 import messagesIcon from "../assets/messages_button.png";
 import filtersIcon from "../assets/filters_button.png";
+import favouriteIcon from "../assets/favourite_button.png";
 
 const Header = ({isAuthenticated, handleLogout, toggleChatSidebar}) => {
     const navigate = useNavigate();
@@ -212,9 +213,12 @@ const Header = ({isAuthenticated, handleLogout, toggleChatSidebar}) => {
                 </button>
             )}
 
-            <div className="flex items-center ml-4 space-x-2">
+            <div className="flex items-center ml-4 space-x-4">
                 {isAuthenticated ? (
                     <>
+                        <button onClick={() => navigate("/favourites")}>
+                            <img src={favouriteIcon} alt="Избранное" className="w-7 h-7"/>
+                        </button>
                         <button onClick={toggleChatSidebar} className="relative">
                             <img src={messagesIcon} alt="Сообщения" className="w-7 h-7"/>
                             {unreadCount > 0 && (

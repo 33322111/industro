@@ -110,3 +110,13 @@ class Resume(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Favourite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="favourites")
+    ad = models.ForeignKey(Ad, null=True, blank=True, on_delete=models.CASCADE)
+    resume = models.ForeignKey(Resume, null=True, blank=True, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = (("user", "ad"), ("user", "resume"))

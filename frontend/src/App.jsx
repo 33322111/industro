@@ -14,6 +14,8 @@ import SearchResultsPage from "./pages/SearchResultsPage.jsx";
 import UserProfilePage from "./pages/UserProfilePage.jsx";
 import EditAdPage from "./pages/EditAdPage.jsx";
 import PasswordResetConfirm from "./pages/PasswordResetConfirm.jsx";
+import FavouritesPage from "./pages/FavouritesPage.jsx";
+import RulesPage from "./components/RulesPage.jsx";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -88,6 +90,8 @@ function App() {
           <Route path="/profile/:id" element={<UserProfilePage />} />
           <Route path="/edit-ad/:id" element={<EditAdPage />} />
           <Route path="/reset-password/:uid/:token" element={<PasswordResetConfirm />} />
+          <Route path="/favourites" element={<FavouritesPage />} />
+          <Route path="/rules" element={<RulesPage />} />
         </Routes>
       </Layout>
     </Router>

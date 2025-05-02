@@ -4,7 +4,8 @@ from .views import (
     UserListView, UserDetailView, RegisterView, ProfileDetailView,
     AdListCreateView, AdDetailView, UserAdsView,
     ResumeListCreateView, ResumeDetailView, UserResumesView, AdSearchView, CategoryListView, AdFilterView,
-    ResumeSearchView, PasswordResetConfirmView, PasswordResetView
+    ResumeSearchView, PasswordResetConfirmView, PasswordResetView, FavouriteListView, AddFavouriteView,
+    RemoveFavouriteView, FavouriteCheckView, FavouriteCountView
 )
 
 urlpatterns = [
@@ -42,8 +43,16 @@ urlpatterns = [
 
     # Поиск по резюме
     path('resumes/search/', ResumeSearchView.as_view(), name='resume-search'),
+    # path('resumes/filter/', ResumeFilterView.as_view(), name='resume-filter'),
 
     # Смена пароля
     path('password_reset/', PasswordResetView.as_view(), name='password_reset'),
     path('password_reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+
+    # Избранное
+    path('favourites/', FavouriteListView.as_view(), name="favourite-list"),
+    path('favourites/add/', AddFavouriteView.as_view(), name="favourite-add"),
+    path('favourites/remove/', RemoveFavouriteView.as_view(), name="favourite-remove"),
+    path('favourites/check/', FavouriteCheckView.as_view(), name="favourite-check"),
+    path('favourites/count/', FavouriteCountView.as_view(), name='favourite-count'),
 ]

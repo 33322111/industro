@@ -122,7 +122,7 @@ const ChatWindow = ({roomName, onClose, onBackToSidebar}) => {
                     ←
                 </button>
 
-                <h2 className="text-lg font-bold flex-1 text-center">
+                <h2 className="text-lg font-bold flex-1 text-center text-black">
                     Чат с {recipientUsername}
                 </h2>
 
@@ -206,7 +206,7 @@ const ChatWindow = ({roomName, onClose, onBackToSidebar}) => {
             {/* Поле ввода */}
             <div className="p-3 border-t flex gap-2">
                 <input
-                    className="flex-1 border px-3 py-2 rounded outline-none"
+                    className="flex-1 border px-3 py-2 rounded outline-none text-black"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && sendMessage()}

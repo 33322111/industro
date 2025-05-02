@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Ad, Resume, Subcategory, Category
+from .models import User, Ad, Resume, Subcategory, Category, Favourite
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -111,3 +111,12 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('id', 'name', 'subcategories')
+
+
+class FavouriteSerializer(serializers.ModelSerializer):
+    ad = AdSerializer(read_only=True)
+    resume = ResumeSerializer(read_only=True)
+
+    class Meta:
+        model = Favourite
+        fields = ['id', 'ad', 'resume', 'created_at']

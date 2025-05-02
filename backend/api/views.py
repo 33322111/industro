@@ -1,21 +1,24 @@
 import django_filters
 from rest_framework import generics, permissions, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import User, Ad, Resume, Category
+from .models import User, Ad, Resume, Category, Favourite
 from .serializers import UserSerializer, RegisterSerializer, AdSerializer, ResumeSerializer, ProfileSerializer, \
-    CategorySerializer
+    CategorySerializer, FavouriteSerializer
 from rest_framework import generics, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from asgiref.sync import sync_to_async
 from django.core.mail import send_mail
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AnonymousUser
+from django.views import View
+from .models import Favourite, Ad
 
 
 class UserListView(generics.ListAPIView):
@@ -224,8 +227,10 @@ class ResumeSearchView(generics.ListAPIView):
     ordering_fields = ['created_at', 'price_from', 'price_to']
     ordering = ['-created_at']
 
+
 User = get_user_model()
 token_generator = PasswordResetTokenGenerator()
+
 
 class PasswordResetView(APIView):
     authentication_classes = []
@@ -259,12 +264,14 @@ class PasswordResetView(APIView):
             print(e)
             return Response({'error': 'Ошибка при отправке письма.'}, status=500)
 
+
 class PasswordResetConfirmView(APIView):
     authentication_classes = []
     permission_classes = []
     """
     Пользователь присылает новый пароль вместе с uid и токеном.
     """
+
     def post(self, request):
         uid = request.data.get("uid")
         token = request.data.get("token")
@@ -282,3 +289,94 @@ class PasswordResetConfirmView(APIView):
         user.save()
 
         return Response({"message": "Пароль успешно изменён"})
+
+
+class FavouriteListView(generics.ListAPIView):
+    serializer_class = FavouriteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Favourite.objects.filter(user=self.request.user).order_by('-created_at')
+
+
+class AddFavouriteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        ad_id = request.data.get("ad_id")
+        resume_id = request.data.get("resume_id")
+
+        if ad_id:
+            obj, created = Favourite.objects.get_or_create(user=request.user, ad_id=ad_id)
+        elif resume_id:
+            obj, created = Favourite.objects.get_or_create(user=request.user, resume_id=resume_id)
+        else:
+            return Response({"error": "ad_id or resume_id is required"}, status=400)
+
+        return Response({"message": "Добавлено в избранное"}, status=201)
+
+
+class RemoveFavouriteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        ad_id = request.data.get("ad_id")
+        resume_id = request.data.get("resume_id")
+
+        fav = Favourite.objects.filter(user=request.user)
+        print(request.data)
+        if ad_id:
+            fav = fav.filter(ad_id=ad_id)
+        elif resume_id:
+            fav = fav.filter(resume_id=resume_id)
+        else:
+            return Response({"error": "ad_id or resume_id is required"}, status=400)
+
+        deleted, _ = fav.delete()
+        if deleted:
+            return Response({"message": "Удалено из избранного"}, status=200)
+        return Response({"error": "Не найдено"}, status=404)
+
+
+class FavouriteCheckView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        ad_id = request.query_params.get("ad_id")
+        if not ad_id:
+            return Response({"error": "ad_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            ad = Ad.objects.get(id=ad_id)
+        except Ad.DoesNotExist:
+            return Response({"error": "Ad not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        is_fav = Favourite.objects.filter(user=request.user, ad=ad).exists()
+        return Response({"is_favourite": is_fav})
+
+
+class FavouriteCountView(View):
+    authentication_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
+    def get(self, request):
+        ad_id = request.GET.get("ad_id")
+        resume_id = request.GET.get("resume_id")
+
+        if ad_id:
+            try:
+                ad = Ad.objects.get(id=ad_id)
+            except Ad.DoesNotExist:
+                return JsonResponse({"error": "Объявление не найдено"}, status=404)
+            count = Favourite.objects.filter(ad=ad).count()
+            return JsonResponse({"count": count})
+
+        elif resume_id:
+            try:
+                resume = Resume.objects.get(id=resume_id)
+            except Resume.DoesNotExist:
+                return JsonResponse({"error": "Резюме не найдено"}, status=404)
+            count = Favourite.objects.filter(resume=resume).count()
+            return JsonResponse({"count": count})
+
+        else:
+            return HttpResponseBadRequest("Не указан ad_id или resume_id")
