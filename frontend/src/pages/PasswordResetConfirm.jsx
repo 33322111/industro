@@ -18,7 +18,7 @@ const PasswordResetConfirm = () => {
     }
 
     try {
-      await api.post("/password_reset/confirm/", {
+      await api.post("/password-reset/confirm/", {
         uid,
         token,
         new_password: newPassword,

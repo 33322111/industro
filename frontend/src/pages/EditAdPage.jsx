@@ -83,7 +83,7 @@ const EditAdPage = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-xl mt-10">
-      <h2 className="text-xl font-bold mb-4">Редактировать объявление</h2>
+      <h2 className="text-xl font-bold text-center mb-4">Редактировать объявление</h2>
       <form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
         <input
           name="title"
@@ -220,12 +220,14 @@ const EditAdPage = () => {
 
         {message && <p className="text-green-600 font-semibold">{message}</p>}
 
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-        >
-          Сохранить изменения
-        </button>
+        <div className="flex justify-center">
+          <button
+              type="submit"
+              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+          >
+            Сохранить изменения
+          </button>
+        </div>
       </form>
     </div>
   );

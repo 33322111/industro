@@ -88,9 +88,10 @@ const Profile = ({ isAuthenticated }) => {
 
   return (
     <div style={styles.container}>
-      <h1>Личный профиль</h1>
+      <h3 className="text-xl font-semibold mb-4">Личный профиль</h3>
 
-      <form style={styles.form} onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
+      <form style={styles.form} onSubmit={(e) => {
+        e.preventDefault(); handleSave(); }}>
 
         <div style={styles.avatarWrapper}>
           <img

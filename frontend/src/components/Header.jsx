@@ -6,6 +6,7 @@ import profileIcon from "../assets/profile_button.png";
 import messagesIcon from "../assets/messages_button.png";
 import filtersIcon from "../assets/filters_button.png";
 import favouriteIcon from "../assets/favourite_button.png";
+import logo from "../assets/logo_4x.png";
 
 const Header = ({isAuthenticated, handleLogout, toggleChatSidebar}) => {
     const navigate = useNavigate();
@@ -170,8 +171,10 @@ const Header = ({isAuthenticated, handleLogout, toggleChatSidebar}) => {
     };
 
     return (
-        <header className="flex items-center justify-between p-4 bg-blue-600 text-white relative">
-            <h1 className="text-2xl font-bold cursor-pointer select-none" onClick={() => navigate("/")}>Industro</h1>
+        <header className="flex items-center justify-between py-1 px-4 bg-blue-600 text-white relative">
+            <h1 className="cursor-pointer select-none" onClick={() => navigate("/")}>
+                <img src={logo} alt="Industro Logo" className="h-20"/>
+            </h1>
 
             {isAuthenticated && shouldShowSearchBar && (
                 <div className="flex items-center bg-white rounded-lg px-3 py-1 w-2/4 text-black">

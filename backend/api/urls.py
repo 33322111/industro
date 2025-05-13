@@ -46,8 +46,8 @@ urlpatterns = [
     # path('resumes/filter/', ResumeFilterView.as_view(), name='resume-filter'),
 
     # Смена пароля
-    path('password_reset/', PasswordResetView.as_view(), name='password_reset'),
-    path('password_reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('password-reset/', PasswordResetView.as_view(), name='password_reset'),
+    path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 
     # Избранное
     path('favourites/', FavouriteListView.as_view(), name="favourite-list"),

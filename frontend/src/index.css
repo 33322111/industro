@@ -16,6 +16,7 @@ button:hover {
   opacity: 0.9;
 }
 
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

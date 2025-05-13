@@ -9,7 +9,7 @@ const PasswordReset = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await api.post("/password_reset/", { email });
+      const response = await api.post("/password-reset/", { email });
       setMessage("Письмо для сброса пароля отправлено. Проверьте почту.");
       setError("");
     } catch (err) {
@@ -20,7 +20,7 @@ const PasswordReset = () => {
 
   return (
     <div style={styles.container}>
-      <h1>Сброс пароля</h1>
+      <h1 className="text-3xl font-bold mb-6">Сброс пароля</h1>
       <form onSubmit={handleSubmit} style={styles.form}>
         <label style={styles.label}>
           Email:
