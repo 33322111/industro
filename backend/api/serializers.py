@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import User, Ad, Resume, Subcategory, Category, Favourite
+import re
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -18,6 +19,22 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'email', 'password', 'is_client', 'is_contractor']
 
+    def validate_username(self, value):
+        if not re.match(r'^[A-Za-z0-9_]+$', value):
+            raise serializers.ValidationError("Имя пользователя может содержать только буквы, цифры и подчёркивания.")
+        if ' ' in value:
+            raise serializers.ValidationError("Имя пользователя не должно содержать пробелы.")
+        return value
+
+    def validate_password(self, value):
+        if len(value) < 8:
+            raise serializers.ValidationError("Пароль должен содержать не менее 8 символов.")
+        if not re.match(r'^[A-Za-z0-9@#$%^&+=!]+$', value):
+            raise serializers.ValidationError("Пароль содержит недопустимые символы.")
+        if ' ' in value:
+            raise serializers.ValidationError("Пароль не должен содержать пробелы.")
+        return value
+
     def create(self, validated_data):
         user = User(
             username=validated_data['username'],
@@ -25,7 +42,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             is_client=validated_data.get('is_client', False),
             is_contractor=validated_data.get('is_contractor', False),
         )
-        user.set_password(validated_data['password'])  # Шифруем пароль
+        user.set_password(validated_data['password'])
         user.save()
         return user
 

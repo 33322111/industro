@@ -43,7 +43,7 @@ urlpatterns = [
 
     # Поиск по резюме
     path('resumes/search/', ResumeSearchView.as_view(), name='resume-search'),
-    # path('resumes/filter/', ResumeFilterView.as_view(), name='resume-filter'),
+    path('resumes/filter/', AdFilterView.as_view(), name='resume-filter'),
 
     # Смена пароля
     path('password-reset/', PasswordResetView.as_view(), name='password_reset'),
